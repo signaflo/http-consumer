@@ -1,0 +1,4 @@
+/**
+ * REST functionality.
+ */
+package rest;
