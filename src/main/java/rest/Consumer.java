@@ -5,7 +5,6 @@ import com.mashape.unirest.request.GetRequest;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,6 +26,7 @@ public final class Consumer<T> implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
     private static final int NOT_MODIFIED = 304;
+    private static final int OK = 200;
     private static final AtomicLong FILE_COUNTER = new AtomicLong();
     private static final DateTimeFormatter DTF = DateTimeFormatter.ISO_LOCAL_DATE;
 
@@ -35,7 +35,7 @@ public final class Consumer<T> implements Runnable {
     private String etag = "";
     private RestResponse<T> restResponse = null;
 
-    Consumer(@NonNull String url, @NonNull Class<T> type) {
+    public Consumer(@NonNull String url, @NonNull Class<T> type) {
         this.url = url;
         this.type = type;
     }
@@ -70,29 +70,33 @@ public final class Consumer<T> implements Runnable {
         getRequest.header("If-None-Match", this.etag);
         RestRequest<T> restRequest = new UnirestRequest<>(getRequest, this.type);
         this.updateWith(restRequest);
-        if (this.restResponse.getStatus() == 200) {
-            String currentDate = LocalDateTime.now().format(DTF);
-            String path = currentDate + "_" + FILE_COUNTER.incrementAndGet();
-            File file = new File(path);
-            if (file.exists()) {
-                RuntimeException e = new RuntimeException(
-                        "The file " + file + " exists and will not be overwritten." + " Data will not be saved.");
-                LOGGER.error("The file " + file + " already exists.", e);
-                throw e;
-            } else {
-                try (FileOutputStream outputStream = new FileOutputStream(file)) {
-                    file.createNewFile();
-                    InputStream inputStream = this.restResponse.getBodyAsInputStream();
-                    int streamLength = inputStream.available();
-                    byte[] rawData = new byte[streamLength];
-                    inputStream.read(rawData);
-                    outputStream.write(rawData);
-                    outputStream.flush();
-                    outputStream.close();
-                } catch (IOException ioe) {
-                    LOGGER.error("Error writing to output stream.", ioe);
-                    throw new RuntimeException("The file " + path + " could not be created.");
-                }
+        if (this.restResponse.getStatus() == OK) {
+            writeToFile();
+        }
+    }
+
+    private void writeToFile() {
+        String currentDate = LocalDateTime.now().format(DTF);
+        String path = currentDate + "_" + FILE_COUNTER.incrementAndGet();
+        File file = new File(path);
+        if (file.exists()) {
+            RuntimeException e = new RuntimeException(
+                    "The file " + file + " exists and will not be overwritten." + " Data will not be saved.");
+            LOGGER.error("The file " + file + " already exists.", e);
+            throw e;
+        } else {
+            try (FileOutputStream outputStream = new FileOutputStream(file)) {
+                file.createNewFile();
+                InputStream inputStream = this.restResponse.getBodyAsInputStream();
+                int streamLength = inputStream.available();
+                byte[] rawData = new byte[streamLength];
+                inputStream.read(rawData);
+                outputStream.write(rawData);
+                outputStream.flush();
+                outputStream.close();
+            } catch (IOException ioe) {
+                LOGGER.error("Error writing to output stream.", ioe);
+                throw new RuntimeException("The file " + path + " could not be created.");
             }
         }
     }
