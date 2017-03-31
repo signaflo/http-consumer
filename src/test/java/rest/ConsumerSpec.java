@@ -6,6 +6,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.*;
@@ -107,6 +110,9 @@ public class ConsumerSpec {
         url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
         Consumer<String> consumer = new Consumer<>(url, stringType);
         consumer.run();
+        Thread.sleep(15000L);
+        consumer.run();
+        Thread.sleep(15000L);
         consumer.run();
 //        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 //        executorService.scheduleWithFixedDelay(repeatRequest, 1, 15, TimeUnit.SECONDS);

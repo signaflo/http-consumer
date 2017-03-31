@@ -1,7 +1,5 @@
 package rest;
 
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.GetRequest;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +8,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -66,12 +67,18 @@ public final class Consumer<T> implements Runnable {
 
     @Override
     public void run() {
-        GetRequest getRequest = Unirest.get(this.url);
-        getRequest.header("If-None-Match", this.etag);
-        RestRequest<T> restRequest = new UnirestRequest<>(getRequest, this.type);
-        this.updateWith(restRequest);
-        if (this.restResponse.getStatus() == OK) {
-            writeToFile();
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection)(new URL(this.url).openConnection());
+            connection.setRequestProperty("If-None-Match", this.etag);
+            connection.connect();
+            RestRequest<T> restRequest = new JavaRestRequest<>(connection);
+            this.updateWith(restRequest);
+            if (this.restResponse.getStatus() == OK) {
+                writeToFile();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Could not open connection to {}", url, e);
         }
     }
 
