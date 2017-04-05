@@ -4,12 +4,9 @@ import com.mashape.unirest.http.Headers;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import org.junit.Test;
-import rest.RestResponse;
-import rest.UnirestResponse;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
@@ -23,7 +20,7 @@ public class UnirestResponseSpec {
     @Test
     public void whenUnirestResponseThenStatusCode() {
         when(response.getStatus()).thenReturn(304);
-        RestResponse<JsonNode> restResponse = new UnirestResponse<>(response);
+        RestResponse restResponse = new UnirestResponse<>(response);
         assertThat(restResponse.getStatus(), is(304));
     }
 
@@ -33,14 +30,14 @@ public class UnirestResponseSpec {
         Headers headers = new Headers();
         headers.put("Content-Type", contentType);
         when(response.getHeaders()).thenReturn(headers);
-        RestResponse<JsonNode> restResponse = new UnirestResponse<>(response);
+        RestResponse restResponse = new UnirestResponse<>(response);
         assertThat(restResponse.getHeaderField("Content-Type"), is(contentType));
     }
 
     @Test
     public void whenGetBodyAsStringNullBodyThenEmptyString() {
         when(response.getBody()).thenReturn(null);
-        RestResponse<JsonNode> restResponse = new UnirestResponse<>(response);
+        RestResponse restResponse = new UnirestResponse<>(response);
         assertThat(restResponse.getBodyAsString(), is(""));
     }
 }

@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @param <T> The type of data in the response body.
  */
-public final class UnirestResponse<T> implements RestResponse<T> {
+public final class UnirestResponse<T> implements RestResponse {
 
     //private static final Logger LOGGER = LoggerFactory.getLogger(UnirestResponse.class);
     private final HttpResponse<T> httpResponse;

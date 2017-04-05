@@ -11,32 +11,27 @@ import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
 /**
  * A consumer of some given data source.
  *
- * @param <T> The type of data to be consumed.
  * @author Jacob Rachiele
  *         Feb. 23, 2017
  */
-public final class Consumer<T> implements Runnable {
+public final class Consumer implements Runnable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
     private static final int NOT_MODIFIED = 304;
     private static final int OK = 200;
-    private static final AtomicLong FILE_COUNTER = new AtomicLong();
+    //private static final AtomicLong FILE_COUNTER = new AtomicLong();
     private static final DateTimeFormatter DTF = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final String address;
     private final URL url;
-    private final Class<T> type;
     private String etag = "";
-    private RestResponse<T> restResponse = null;
+    private RestResponse restResponse = null;
 
-    public Consumer(@NonNull String address, @NonNull Class<T> type) {
+    public Consumer(@NonNull String address) {
         this.address = address;
-        this.type = type;
         try {
             this.url = new URL(address);
         } catch (IOException e) {
@@ -45,7 +40,7 @@ public final class Consumer<T> implements Runnable {
         }
     }
 
-    void updateWith(@NonNull final RestRequest<T> restRequest) {
+    void updateWith(@NonNull final RestRequest restRequest) {
         updateRestResponse(restRequest);
         updateETag();
     }
@@ -61,7 +56,7 @@ public final class Consumer<T> implements Runnable {
         }
     }
 
-    void updateRestResponse(final RestRequest<T> restRequest) {
+    void updateRestResponse(final RestRequest restRequest) {
         this.restResponse = restRequest.makeRequest();
     }
 
@@ -77,11 +72,12 @@ public final class Consumer<T> implements Runnable {
             connection.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
             connection.setRequestProperty("If-None-Match", this.etag);
             connection.connect();
-            RestRequest<T> restRequest = new JavaRestRequest<>(connection);
+            RestRequest restRequest = new JavaRestRequest(connection);
             this.updateWith(restRequest);
             if (this.restResponse.getStatus() == OK) {
                 writeToFile(connection.getContentLength());
             }
+            System.out.println(this.restResponse.getBodyAsString());
         } catch (IOException e) {
             LOGGER.error("Could not open connection to {}", address, e);
         }
@@ -89,7 +85,7 @@ public final class Consumer<T> implements Runnable {
 
     private void writeToFile(int numChars) {
         String currentDate = LocalDateTime.now().format(DTF);
-        String path = currentDate + "_" + FILE_COUNTER.incrementAndGet();//System.currentTimeMillis();
+        String path = currentDate + "_" + System.currentTimeMillis();
         File file = new File(path);
         if (file.exists()) {
             IllegalStateException e = new IllegalStateException("The file already exists. No data will be saved.");
@@ -108,29 +104,5 @@ public final class Consumer<T> implements Runnable {
             LOGGER.error("Error writing response data to file.", ioe);
             throw new RuntimeException("The file " + path + " could not be created.");
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Consumer{" + "etag='" + etag + '\'' + ", address='" + address + '\'' + ", restResponse=" +
-               restResponse + ", type=" + type + '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Consumer<?> that = (Consumer<?>) o;
-
-        if (!address.equals(that.address)) return false;
-        return type.equals(that.type);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = address.hashCode();
-        result = 31 * result + type.hashCode();
-        return result;
     }
 }

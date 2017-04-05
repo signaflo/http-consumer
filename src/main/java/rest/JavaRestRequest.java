@@ -8,7 +8,7 @@ import java.net.HttpURLConnection;
  * @author Jacob Rachiele
  *         Mar. 31, 2017
  */
-public class JavaRestRequest<T> implements RestRequest<T> {
+public class JavaRestRequest implements RestRequest {
 
     private final HttpURLConnection connection;
 
@@ -17,7 +17,7 @@ public class JavaRestRequest<T> implements RestRequest<T> {
     }
 
     @Override
-    public RestResponse<T> makeRequest() {
-        return new JavaRestResponse<T>(connection);
+    public RestResponse makeRequest() {
+        return new JavaRestResponse(connection);
     }
 }

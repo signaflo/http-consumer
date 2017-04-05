@@ -43,7 +43,7 @@ public class UnirestRequestSpec {
     public void whenUnirestExceptionThenRuntimeException() throws Exception {
         doThrow(UnirestException.class).when(getRequest).asObject(JsonNode.class);
         exception.expect(RuntimeException.class);
-        RestRequest<JsonNode> request = new UnirestRequest<>(getRequest, JsonNode.class);
+        RestRequest request = new UnirestRequest<>(getRequest, JsonNode.class);
         request.makeRequest();
     }
 
@@ -55,7 +55,7 @@ public class UnirestRequestSpec {
         when(getRequest.asObject(JsonNode.class)).thenReturn(response);
         when(response.getBody()).thenReturn(jsonNode);
         when(jsonNode.toString()).thenReturn(simpleJsonString);
-        RestRequest<JsonNode> request = new UnirestRequest<>(getRequest, JsonNode.class);
+        RestRequest request = new UnirestRequest<>(getRequest, JsonNode.class);
         assertThat(request.makeRequest().getBodyAsString(), is(simpleJsonString));
     }
 }

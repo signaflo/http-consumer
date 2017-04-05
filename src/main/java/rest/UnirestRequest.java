@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  *
  * @param <T> The type of data in the response body.
  */
-public final class UnirestRequest<T> implements RestRequest<T> {
+public final class UnirestRequest<T> implements RestRequest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnirestRequest.class);
     private final GetRequest getRequest;
@@ -28,7 +28,7 @@ public final class UnirestRequest<T> implements RestRequest<T> {
     }
 
     @Override
-    public RestResponse<T> makeRequest() {
+    public RestResponse makeRequest() {
         try {
             return new UnirestResponse<>(getRequest.asObject(type));
         } catch (UnirestException e) {

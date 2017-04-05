@@ -6,9 +6,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.*;
@@ -24,10 +21,9 @@ import static org.mockito.Mockito.*;
 public class ConsumerSpec {
 
     private String url = "http://localhost:80";
-    private Class<String> stringType = String.class;
-    private RestRequest<String> restRequest;
-    private RestResponse<String> restResponse;
-    private Consumer<String> consumer;
+    private RestRequest restRequest;
+    private RestResponse restResponse;
+    private Consumer consumer;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -37,7 +33,7 @@ public class ConsumerSpec {
     public void beforeMethod() {
         restRequest = mock(RestRequest.class);
         restResponse = mock(RestResponse.class);
-        consumer = new Consumer<>(url, stringType);
+        consumer = new Consumer(url);
     }
 
     @Test
@@ -95,20 +91,14 @@ public class ConsumerSpec {
     @Test
     public void whenInsantiatedWithNullURLThenNPE() {
         exception.expect(NullPointerException.class);
-        new Consumer<>(null, stringType);
-    }
-
-    @Test
-    public void whenInsantiatedWithNullClassTypeThenNPE() {
-        exception.expect(NullPointerException.class);
-        new Consumer<>(url, null);
+        new Consumer(null);
     }
 
     @Test
     @Ignore
     public void quickTest() throws Exception {
         url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
-        Consumer<String> consumer = new Consumer<>(url, stringType);
+        Consumer consumer = new Consumer(url);
         consumer.run();
         Thread.sleep(15000L);
         consumer.run();

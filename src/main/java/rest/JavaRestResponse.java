@@ -3,26 +3,41 @@ package rest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * [Insert class description]
+ * A rest response that uses the {@link java.net} package in the underlying implementation.
  *
  * @author Jacob Rachiele
  *         Mar. 31, 2017
  */
-public class JavaRestResponse<T> implements RestResponse<T> {
+public class JavaRestResponse implements RestResponse {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(JavaRestResponse.class);
     private final HttpURLConnection connection;
+    private final byte[] bytes;
 
     JavaRestResponse(HttpURLConnection connection) {
         this.connection = connection;
+        this.bytes = getBytesFromConnection();
+    }
+
+    private byte[] getBytesFromConnection() {
+        try(InputStream inputStream = new BufferedInputStream(connection.getInputStream());
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(connection.getContentLength())) {
+            byte[] freshBytes = new byte[connection.getContentLength()];
+            int len;
+            while ((len = inputStream.read(freshBytes)) != -1) {
+                outputStream.write(freshBytes, 0, len);
+            }
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            LOGGER.error("Could not read bytes from the URL connection.", e);
+            throw new RuntimeException();
+        }
     }
 
     @Override
@@ -42,27 +57,11 @@ public class JavaRestResponse<T> implements RestResponse<T> {
 
     @Override
     public String getBodyAsString() {
-        return new String(getBodyAsByteArray());
+        return new String(this.bytes.clone());
     }
 
     @Override
     public InputStream getBodyAsInputStream() {
-        try {
-            return connection.getInputStream();
-        } catch (IOException e) {
-            LOGGER.error("Could not retrieve input from the URL connection.", e);
-            throw new RuntimeException(e);
-        }
-    }
-
-    private byte[] getBodyAsByteArray() {
-        try(BufferedInputStream inputStream = new BufferedInputStream(getBodyAsInputStream());) {
-        byte[] bytes = new byte[connection.getContentLength()];
-        inputStream.read(bytes);
-        return bytes;
-        } catch (IOException e) {
-            LOGGER.error("Could not read bytes from the URL connection.", e);
-            throw new RuntimeException();
-        }
+        return new ByteArrayInputStream(this.bytes.clone());
     }
 }

@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration monitorInterval="60">
-    <Properties>
-        <Property name="log-path">logs</Property>
-        <Property name="archive">${log-path}/archive</Property>
-        <Property name="app-name">Consumer</Property>
-    </Properties>
-
     <Appenders>
         <Console name="Console-Appender" target="SYSTEM_OUT">
             <PatternLayout>
@@ -14,23 +8,10 @@
                 </pattern>
             </PatternLayout>
         </Console>
-        <RollingFile name="RollingFile" fileName="${log-path}/${app-name}-${date:yyyy-MM-dd}.log"
-                     filePattern="logs/$${date:yyyy-MM}/${app-name}-%d{MM-dd-yyyy}-%i.log.gz">
-            <PatternLayout>
-                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
-            </PatternLayout>
-            <Policies>
-                <TimeBasedTriggeringPolicy />
-                <SizeBasedTriggeringPolicy size="250 MB"/>
-            </Policies>
-        </RollingFile>
     </Appenders>
 
     <Loggers>
-        <Logger name="rest" level="debug">
-            <AppenderRef ref="RollingFile"/>
-        </Logger>
-        <Root level="debug">
+        <Root level="fatal">
             <AppenderRef ref="Console-Appender"/>
         </Root>
     </Loggers>
