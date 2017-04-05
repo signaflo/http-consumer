@@ -3,6 +3,7 @@
     <Properties>
         <Property name="log-path">logs</Property>
         <Property name="archive">${log-path}/archive</Property>
+        <Property name="app-name">Consumer</Property>
     </Properties>
 
     <Appenders>
@@ -13,18 +14,21 @@
                 </pattern>
             </PatternLayout>
         </Console>
-        <File name="File-Appender" fileName="${log-path}/%d.log">
+        <RollingFile name="RollingFile" fileName="${log-path}/${app-name}-${date:yyyy-MM-dd}.log"
+                     filePattern="logs/$${date:yyyy-MM}/${app-name}-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
-                <pattern>
-                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
-                </pattern>
+                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
             </PatternLayout>
-        </File>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
     </Appenders>
 
     <Loggers>
-        <Logger name="rest" level="debug" additivity="false">
-            <AppenderRef ref="File-Appender" level="error"/>
+        <Logger name="rest" level="debug">
+            <AppenderRef ref="RollingFile"/>
         </Logger>
         <Root level="debug">
             <AppenderRef ref="Console-Appender"/>

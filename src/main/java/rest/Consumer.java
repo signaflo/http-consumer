@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -86,30 +87,26 @@ public final class Consumer<T> implements Runnable {
         }
     }
 
-    private void writeToFile(int numBytes) {
+    private void writeToFile(int numChars) {
         String currentDate = LocalDateTime.now().format(DTF);
-        String path = currentDate + "_" + FILE_COUNTER.incrementAndGet();
+        String path = currentDate + "_" + FILE_COUNTER.incrementAndGet();//System.currentTimeMillis();
         File file = new File(path);
         if (file.exists()) {
-            RuntimeException e = new RuntimeException(
-                    "The file " + file + " exists and will not be overwritten." + " Data will not be saved.");
-            LOGGER.error("The file " + file + " already exists.", e);
+            IllegalStateException e = new IllegalStateException("The file already exists. No data will be saved.");
+            LOGGER.error("The file \"" + file.getAbsolutePath() + "\" already exists.", e);
             throw e;
-        } else {
-            try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(
-                    file), numBytes); InputStream inputStream = new BufferedInputStream(
-                    this.restResponse.getBodyAsInputStream(), numBytes)) {
-                file.createNewFile();
-                byte[] rawData = new byte[numBytes];
-                int len;
-                while ((len = inputStream.read(rawData)) != -1) {
-                    outputStream.write(rawData, 0, len);
-                }
-                outputStream.flush();
-            } catch (IOException ioe) {
-                LOGGER.error("Error writing to output stream.", ioe);
-                throw new RuntimeException("The file " + path + " could not be created.");
+        }
+        try (Writer writer = new BufferedWriter(new FileWriter(file), numChars); Reader reader = new BufferedReader(
+                new InputStreamReader(this.restResponse.getBodyAsInputStream(), Charset.forName("UTF-8")), numChars)) {
+            char[] rawData = new char[numChars];
+            int len;
+            while ((len = reader.read(rawData)) != -1) {
+                writer.write(rawData, 0, len);
             }
+            writer.flush();
+        } catch (IOException ioe) {
+            LOGGER.error("Error writing response data to file.", ioe);
+            throw new RuntimeException("The file " + path + " could not be created.");
         }
     }
 

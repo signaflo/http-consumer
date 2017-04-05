@@ -1,7 +1,6 @@
 package rest;
 
 import java.net.HttpURLConnection;
-import java.net.URLConnection;
 
 /**
  * [Insert class description]
