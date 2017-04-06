@@ -26,9 +26,14 @@ public class JavaRestResponse implements RestResponse {
     }
 
     private byte[] getBytesFromConnection() {
-        try(InputStream inputStream = new BufferedInputStream(connection.getInputStream());
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream(connection.getContentLength())) {
-            byte[] freshBytes = new byte[connection.getContentLength()];
+        int contentLength = connection.getContentLength();
+        if (contentLength < 0) {
+            return new byte[0];
+        }
+        try (InputStream inputStream = new BufferedInputStream(
+                connection.getInputStream()); ByteArrayOutputStream outputStream = new ByteArrayOutputStream(
+                contentLength)) {
+            byte[] freshBytes = new byte[contentLength];
             int len;
             while (inputStream.available() > 0 && (len = inputStream.read(freshBytes)) != -1) {
                 outputStream.write(freshBytes, 0, len);

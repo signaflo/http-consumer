@@ -1,5 +1,6 @@
 package rest;
 
+import lombok.ConfigurationKeys;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,9 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,23 +30,38 @@ public final class Consumer implements Runnable {
     private static final DateTimeFormatter DTF = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final String address;
+    private String outputPath;
+    private String fileName;
     private final URL url;
     private String etag = "";
     private RestResponse restResponse = null;
 
     public Consumer(@NonNull String address) {
+        this(address,"data/" + LocalDateTime.now().format(DTF));
+    }
+
+    Consumer(@NonNull URL url) {
+        this.url = url;
+        this.address = url.toString();
+        String currentDate = LocalDateTime.now().format(DTF);
+        this.outputPath = "data/" + currentDate;
+        this.fileName = Long.toString(System.currentTimeMillis());
+    }
+
+    Consumer(@NonNull String address, @NonNull String fileOutputPath) {
+        this(address, fileOutputPath, Long.toString(System.currentTimeMillis()));
+    }
+
+    Consumer(@NonNull String address, @NonNull String fileOutputPath, @NonNull String fileName) {
         this.address = address;
+        this.outputPath = fileOutputPath;
+        this.fileName = fileName;
         try {
             this.url = new URL(address);
         } catch (IOException e) {
             LOGGER.error("Could not create URL at address: {}", address, e);
             throw new RuntimeException(e);
         }
-    }
-
-    Consumer(URL url) {
-        this.url = url;
-        this.address = url.toString();
     }
 
     void updateWith(@NonNull final RestRequest restRequest) {
@@ -88,9 +107,7 @@ public final class Consumer implements Runnable {
     }
 
     private void writeToFile(int numChars) {
-        String currentDate = LocalDateTime.now().format(DTF);
-        String path = currentDate + "_" + System.currentTimeMillis();
-        File file = new File(path);
+        File file = getFile();
         if (file.exists()) {
             IllegalStateException e = new IllegalStateException("The file already exists. No data will be saved.");
             LOGGER.error("The file \"" + file.getAbsolutePath() + "\" already exists.", e);
@@ -106,7 +123,22 @@ public final class Consumer implements Runnable {
             writer.flush();
         } catch (IOException ioe) {
             LOGGER.error("Error writing response data to file.", ioe);
-            throw new RuntimeException("The file " + path + " could not be created.");
+            throw new RuntimeException("The file " + outputPath + " could not be created.");
         }
+    }
+
+    private File getFile() {
+        this.outputPath = "data/" + LocalDateTime.now().format(DTF);
+        Path path = Paths.get(outputPath);
+        if (!Files.exists(path)) {
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        this.fileName = Long.toString(System.currentTimeMillis());
+        Path fullPath = Paths.get(outputPath, fileName);
+        return fullPath.toFile();
     }
 }

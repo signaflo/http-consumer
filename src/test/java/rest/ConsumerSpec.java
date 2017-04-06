@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
  */
 public class ConsumerSpec {
 
-    private String url = "http://localhost:80";
+    private String url = "http://localhost:8080";
     private RestRequest restRequest;
     private RestResponse restResponse;
     private Consumer consumer;
@@ -101,7 +101,6 @@ public class ConsumerSpec {
 
     @Test
     public void whenRunThenNoErrors() throws Exception {
-        String url = "http://localhost:8080";
         Consumer consumer = new Consumer(new URL(url));
         consumer.run();
     }
@@ -109,13 +108,13 @@ public class ConsumerSpec {
     @Test
     @Ignore
     public void quickTest() throws Exception {
-//        url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
-//        Consumer consumer = new Consumer(url);
-//        consumer.run();
-//        Thread.sleep(15000L);
-//        consumer.run();
-//        Thread.sleep(15000L);
-//        consumer.run();
+        url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
+        Consumer consumer = new Consumer(url);
+        consumer.run();
+        Thread.sleep(15000L);
+        consumer.run();
+        Thread.sleep(15000L);
+        consumer.run();
 //        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 //        executorService.scheduleWithFixedDelay(repeatRequest, 1, 15, TimeUnit.SECONDS);
 //        Thread.sleep(100 * 1000);
