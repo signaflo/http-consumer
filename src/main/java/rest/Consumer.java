@@ -40,6 +40,11 @@ public final class Consumer implements Runnable {
         }
     }
 
+    Consumer(URL url) {
+        this.url = url;
+        this.address = url.toString();
+    }
+
     void updateWith(@NonNull final RestRequest restRequest) {
         updateRestResponse(restRequest);
         updateETag();
@@ -77,7 +82,6 @@ public final class Consumer implements Runnable {
             if (this.restResponse.getStatus() == OK) {
                 writeToFile(connection.getContentLength());
             }
-            System.out.println(this.restResponse.getBodyAsString());
         } catch (IOException e) {
             LOGGER.error("Could not open connection to {}", address, e);
         }

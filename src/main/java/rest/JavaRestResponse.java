@@ -30,7 +30,7 @@ public class JavaRestResponse implements RestResponse {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream(connection.getContentLength())) {
             byte[] freshBytes = new byte[connection.getContentLength()];
             int len;
-            while ((len = inputStream.read(freshBytes)) != -1) {
+            while (inputStream.available() > 0 && (len = inputStream.read(freshBytes)) != -1) {
                 outputStream.write(freshBytes, 0, len);
             }
             return outputStream.toByteArray();

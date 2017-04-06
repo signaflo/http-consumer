@@ -1,5 +1,7 @@
 package rest;
 
+import lombok.NonNull;
+
 import java.net.HttpURLConnection;
 
 /**
@@ -12,7 +14,7 @@ public class JavaRestRequest implements RestRequest {
 
     private final HttpURLConnection connection;
 
-    JavaRestRequest(HttpURLConnection connection) {
+    JavaRestRequest(@NonNull HttpURLConnection connection) {
         this.connection = connection;
     }
 
