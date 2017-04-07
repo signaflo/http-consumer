@@ -70,7 +70,9 @@ public class HttpSource implements UpdatingSource {
 
     @Override
     public boolean fresh() {
-        return this.httpResponse.getStatus() == OK;
+        int status = this.httpResponse.getStatus();
+        LOG.info("Checking http response status... response code = {}", status);
+        return status == OK;
     }
 
     @Override
