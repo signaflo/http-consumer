@@ -5,7 +5,7 @@ import lombok.NonNull;
 import java.net.HttpURLConnection;
 
 /**
- * [Insert class description]
+ * An HTTP request that uses the {@link java.net} package for the underlying implementation.
  *
  * @author Jacob Rachiele
  *         Mar. 31, 2017

@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * An HTTP response that uses the {@link java.net} package in the underlying implementation.
+ * An HTTP response that uses the {@link java.net} package for the underlying implementation.
  *
  * @author Jacob Rachiele
  *         Mar. 31, 2017
