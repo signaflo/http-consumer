@@ -9,25 +9,25 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A rest response that uses the {@link java.net} package in the underlying implementation.
+ * An HTTP response that uses the {@link java.net} package in the underlying implementation.
  *
  * @author Jacob Rachiele
  *         Mar. 31, 2017
  */
-public class JavaRestResponse implements RestResponse {
+public class JavaHttpResponse implements HttpResponse {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(JavaRestResponse.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaHttpResponse.class);
     private final HttpURLConnection connection;
     private final byte[] bytes;
 
-    JavaRestResponse(HttpURLConnection connection) {
+    JavaHttpResponse(HttpURLConnection connection) {
         this.connection = connection;
         this.bytes = getBytesFromConnection();
     }
 
     private byte[] getBytesFromConnection() {
         int contentLength = connection.getContentLength();
-        if (contentLength < 0) {
+        if (contentLength < 1) {
             return new byte[0];
         }
         try (InputStream inputStream = new BufferedInputStream(
@@ -35,7 +35,7 @@ public class JavaRestResponse implements RestResponse {
                 contentLength)) {
             byte[] freshBytes = new byte[contentLength];
             int len;
-            while (inputStream.available() > 0 && (len = inputStream.read(freshBytes)) != -1) {
+            while ((len = inputStream.read(freshBytes)) != -1) {
                 outputStream.write(freshBytes, 0, len);
             }
             return outputStream.toByteArray();

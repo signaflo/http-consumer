@@ -13,7 +13,7 @@ import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
-public class JavaRestResponseSpec {
+public class JavaHttpResponseSpec {
 
     private HttpURLConnection connection = mock(HttpURLConnection.class);
 
@@ -27,21 +27,21 @@ public class JavaRestResponseSpec {
     @Test
     public void whenJavaRestResponseThenStatusCode() throws Exception {
         when(connection.getResponseCode()).thenReturn(304);
-        RestResponse restResponse = new JavaRestResponse(connection);
-        assertThat(restResponse.getStatus(), is(304));
+        HttpResponse httpResponse = new JavaHttpResponse(connection);
+        assertThat(httpResponse.getStatus(), is(304));
     }
 
     @Test
     public void whenGetHeaderFieldThenCorrectListReturned() {
         List<String> contentType = Collections.singletonList("text/html");
         when(connection.getHeaderField("Content-Type")).thenReturn("text/html");
-        RestResponse restResponse = new JavaRestResponse(connection);
-        assertThat(restResponse.getHeaderField("Content-Type"), is(contentType));
+        HttpResponse httpResponse = new JavaHttpResponse(connection);
+        assertThat(httpResponse.getHeaderField("Content-Type"), is(contentType));
     }
 
     @Test
     public void whenGetBodyAsStringNullBodyThenEmptyString() throws Exception {
-        RestResponse restResponse = new JavaRestResponse(connection);
-        assertThat(restResponse.getBodyAsString(), is(""));
+        HttpResponse httpResponse = new JavaHttpResponse(connection);
+        assertThat(httpResponse.getBodyAsString(), is(""));
     }
 }

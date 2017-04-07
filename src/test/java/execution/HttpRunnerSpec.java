@@ -1,14 +1,13 @@
-package rest;
+package execution;
 
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import rest.HttpRequest;
+import rest.HttpResponse;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Collections;
 
@@ -22,12 +21,12 @@ import static org.mockito.Mockito.*;
  * @author Jacob Rachiele
  *         Feb. 23, 2017
  */
-public class ConsumerSpec {
+public class HttpRunnerSpec {
 
     private String url = "http://localhost:8080";
-    private RestRequest restRequest;
-    private RestResponse restResponse;
-    private Consumer consumer;
+    private HttpRequest httpRequest;
+    private HttpResponse httpResponse;
+    private HttpRunner runner;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -35,86 +34,86 @@ public class ConsumerSpec {
     @Before
     @SuppressWarnings("unchecked")
     public void beforeMethod() {
-        restRequest = mock(RestRequest.class);
-        restResponse = mock(RestResponse.class);
-        consumer = new Consumer(url);
+        httpRequest = mock(HttpRequest.class);
+        httpResponse = mock(HttpResponse.class);
+        runner = new HttpRunner(url);
     }
 
     @Test
     public void whenUpdateWithNullRestResponseThenEtagEmptyString() {
         //final String url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
-        when(restRequest.makeRequest()).thenReturn(null);
-        consumer.updateWith(restRequest);
-        assertThat(consumer.getEtag(), is(""));
+        when(httpRequest.makeRequest()).thenReturn(null);
+        runner.updateWith(httpRequest);
+        assertThat(runner.getEtag(), is(""));
     }
 
     @Test
     public void whenUpdateWithNonNullRestResponseThenEtagUpdated() {
         //final String url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
-        when(restRequest.makeRequest()).thenReturn(restResponse);
-        when(restResponse.getHeaderField("ETag")).thenReturn(Collections.singletonList("abc"));
-        consumer.updateRestResponse(restRequest);
-        consumer.updateWith(restRequest);
-        assertThat(consumer.getEtag(), is("abc"));
+        when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        when(httpResponse.getHeaderField("ETag")).thenReturn(Collections.singletonList("abc"));
+        runner.updateRestResponse(httpRequest);
+        runner.updateWith(httpRequest);
+        assertThat(runner.getEtag(), is("abc"));
     }
 
     @Test
     public void whenUpdateWithNonNullRestResponseAndGetStatusNotModfiedThenEtagEmptyString() {
         //final String url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
-        when(restRequest.makeRequest()).thenReturn(restResponse);
-        when(restResponse.getStatus()).thenReturn(304);
-        consumer.updateRestResponse(restRequest);
-        consumer.updateWith(restRequest);
-        assertThat(consumer.getEtag(), is(""));
+        when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        when(httpResponse.getStatus()).thenReturn(304);
+        runner.updateRestResponse(httpRequest);
+        runner.updateWith(httpRequest);
+        assertThat(runner.getEtag(), is(""));
     }
 
     @Test
     public void whenUpdateEtagWithNullHeaderFieldThenException() {
-        when(restRequest.makeRequest()).thenReturn(restResponse);
-        consumer.updateRestResponse(restRequest);
+        when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        runner.updateRestResponse(httpRequest);
         exception.expect(RuntimeException.class);
-        consumer.updateETag();
+        runner.updateETag();
     }
 
     @Test
     public void whenUpdateEtagWithEmptyETagHeaderThenException() {
-        when(restResponse.getHeaderField("ETag")).thenReturn(Collections.emptyList());
-        when(restRequest.makeRequest()).thenReturn(restResponse);
-        consumer.updateRestResponse(restRequest);
+        when(httpResponse.getHeaderField("ETag")).thenReturn(Collections.emptyList());
+        when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        runner.updateRestResponse(httpRequest);
         exception.expect(RuntimeException.class);
-        consumer.updateETag();
+        runner.updateETag();
     }
 
     @Test
     public void whenUpdateWithNullRestRequestThenNPE() {
-        restRequest = null;
+        httpRequest = null;
         exception.expect(NullPointerException.class);
-        consumer.updateWith(restRequest);
+        runner.updateWith(httpRequest);
     }
 
     @Test
     public void whenInsantiatedWithNullURLThenNPE() {
         String url = null;
         exception.expect(NullPointerException.class);
-        new Consumer(url);
+        new HttpRunner(url);
     }
 
     @Test
     public void whenRunThenNoErrors() throws Exception {
-        Consumer consumer = new Consumer(new URL(url));
-        consumer.run();
+        HttpRunner runner = new HttpRunner(new URL(url));
+        runner.run();
     }
 
     @Test
     @Ignore
     public void quickTest() throws Exception {
         url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
-        Consumer consumer = new Consumer(url);
-        consumer.run();
+        HttpRunner runner = new HttpRunner(url);
+        runner.run();
         Thread.sleep(15000L);
-        consumer.run();
+        runner.run();
         Thread.sleep(15000L);
-        consumer.run();
+        runner.run();
 //        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 //        executorService.scheduleWithFixedDelay(repeatRequest, 1, 15, TimeUnit.SECONDS);
 //        Thread.sleep(100 * 1000);

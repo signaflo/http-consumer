@@ -12,7 +12,7 @@ import static org.hamcrest.MatcherAssert.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
-public class JavaRestRequestSpec {
+public class JavaHttpRequestSpec {
 
     private String simpleJsonString = "{"+
             "    \"id\": 1,"+
@@ -27,7 +27,7 @@ public class JavaRestRequestSpec {
     @Test
     public void whenNullConnectionThenNPE() {
         exception.expect(NullPointerException.class);
-        new JavaRestRequest(null);
+        new JavaHttpRequest(null);
     }
 
     @Test
@@ -37,7 +37,7 @@ public class JavaRestRequestSpec {
         HttpURLConnection connection = mock(HttpURLConnection.class);
         when(connection.getInputStream()).thenReturn(inputStream);
         when(connection.getContentLength()).thenReturn(simpleJsonString.getBytes().length);
-        RestRequest request = new JavaRestRequest(connection);
+        HttpRequest request = new JavaHttpRequest(connection);
         assertThat(request.makeRequest().getBodyAsString(), is(simpleJsonString));
     }
 }

@@ -10,16 +10,16 @@ import java.net.HttpURLConnection;
  * @author Jacob Rachiele
  *         Mar. 31, 2017
  */
-public class JavaRestRequest implements RestRequest {
+public class JavaHttpRequest implements HttpRequest {
 
     private final HttpURLConnection connection;
 
-    JavaRestRequest(@NonNull HttpURLConnection connection) {
+    public JavaHttpRequest(@NonNull HttpURLConnection connection) {
         this.connection = connection;
     }
 
     @Override
-    public RestResponse makeRequest() {
-        return new JavaRestResponse(connection);
+    public HttpResponse makeRequest() {
+        return new JavaHttpResponse(connection);
     }
 }
