@@ -1,5 +1,7 @@
-package rest;
+package http;
 
+import http.HttpRequest;
+import http.JavaHttpRequest;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

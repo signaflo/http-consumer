@@ -1,4 +1,0 @@
-/**
- * REST functionality.
- */
-package rest;

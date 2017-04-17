@@ -1,4 +1,4 @@
-package data;
+package http.data;
 
 import java.io.InputStream;
 

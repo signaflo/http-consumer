@@ -1,4 +1,4 @@
-package rest;
+package http;
 
 /**
  * A network request that utilizes HTTP.

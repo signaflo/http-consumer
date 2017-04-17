@@ -1,9 +1,9 @@
-package execution;
+package http.execution;
 
-import data.FileSink;
-import data.HttpSource;
-import data.Sink;
-import data.UpdatingSource;
+import http.data.FileSink;
+import http.data.HttpSource;
+import http.data.Sink;
+import http.data.UpdatingSource;
 import lombok.NonNull;
 
 import java.nio.charset.Charset;
@@ -12,7 +12,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * A consumer of data from a HTTP source.
+ * A consumer of http.data from a HTTP source.
  *
  * @author Jacob Rachiele
  *         Feb. 23, 2017
@@ -26,7 +26,7 @@ public final class HttpDailyRunner implements Runnable {
     private final String filePrefix;
     private final String fileSuffix;
 
-    HttpDailyRunner(@NonNull String address, @NonNull String directory, @NonNull String filePrefix,
+    public HttpDailyRunner(@NonNull String address, @NonNull String directory, @NonNull String filePrefix,
                     @NonNull String fileSuffix, @NonNull String contentType) {
         this.source = new HttpSource(address, contentType);
         this.directory = directory;

@@ -1,4 +1,4 @@
-package rest;
+package http;
 
 import java.io.InputStream;
 import java.util.List;

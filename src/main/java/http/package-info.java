@@ -1,0 +1,4 @@
+/**
+ * HTTP functionality.
+ */
+package http;

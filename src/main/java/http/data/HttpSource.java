@@ -1,12 +1,12 @@
-package data;
+package http.data;
 
-import execution.HttpDailyRunner;
+import http.execution.HttpDailyRunner;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rest.HttpRequest;
-import rest.HttpResponse;
-import rest.JavaHttpRequest;
+import http.HttpRequest;
+import http.HttpResponse;
+import http.JavaHttpRequest;
 
 import java.io.IOException;
 import java.io.InputStream;

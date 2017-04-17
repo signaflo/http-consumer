@@ -1,4 +1,4 @@
-package data;
+package http.data;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +35,7 @@ public class FileSink implements Sink {
     private void writeToFile() {
         File file = getFile();
         if (file.exists()) {
-            IllegalStateException e = new IllegalStateException("The file already exists. No data will be saved.");
+            IllegalStateException e = new IllegalStateException("The file already exists. No http.data will be saved.");
             LOG.error("The file " + file.getAbsolutePath() + " already exists.", e);
             throw e;
         }
@@ -50,7 +50,7 @@ public class FileSink implements Sink {
             }
             writer.flush();
         } catch (IOException ioe) {
-            LOG.error("Error writing response data to file.", ioe);
+            LOG.error("Error writing response http.data to file.", ioe);
             throw new RuntimeException("The file " + file.getAbsolutePath() + " could not be created.");
         }
     }

@@ -1,4 +1,4 @@
-package data;
+package http.data;
 
 public interface UpdatingSource extends Source {
 

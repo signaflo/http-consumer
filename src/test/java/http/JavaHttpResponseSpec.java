@@ -1,5 +1,7 @@
-package rest;
+package http;
 
+import http.HttpResponse;
+import http.JavaHttpResponse;
 import org.junit.Before;
 import org.junit.Test;
 
