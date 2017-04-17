@@ -29,7 +29,7 @@ public class HttpSourceSpec {
     public void beforeMethod() {
         httpRequest = mock(HttpRequest.class);
         httpResponse = mock(HttpResponse.class);
-        source = new HttpSource(url);
+        source = new HttpSource(url, "text/plain; charset=UTF-8");
     }
 
     @Test
@@ -88,6 +88,6 @@ public class HttpSourceSpec {
     public void whenInsantiatedWithNullURLThenNPE() {
         String url = null;
         exception.expect(NullPointerException.class);
-        new HttpSource(url);
+        new HttpSource(url, "text/plain; charset=UTF-8");
     }
 }

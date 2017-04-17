@@ -29,10 +29,10 @@ public class FileSink implements Sink {
 
     @Override
     public void write() {
-        writeToFile(this.numChars);
+        writeToFile();
     }
 
-    private void writeToFile(int numChars) {
+    private void writeToFile() {
         File file = getFile();
         if (file.exists()) {
             IllegalStateException e = new IllegalStateException("The file already exists. No data will be saved.");
@@ -42,8 +42,7 @@ public class FileSink implements Sink {
 
         try (Writer writer = new BufferedWriter(new FileWriter(file), numChars);
              Reader reader = new BufferedReader(new InputStreamReader(
-                     this.inputStream,
-                     this.charset), numChars)) {
+                     this.inputStream, this.charset), numChars)) {
             char[] rawData = new char[numChars];
             int len;
             while ((len = reader.read(rawData)) != -1) {

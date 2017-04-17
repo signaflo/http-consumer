@@ -17,22 +17,29 @@ import java.time.format.DateTimeFormatter;
  * @author Jacob Rachiele
  *         Feb. 23, 2017
  */
-public final class HttpRunner implements Runnable {
+public final class HttpDailyRunner implements Runnable {
 
     private static final DateTimeFormatter DTF = DateTimeFormatter.ISO_LOCAL_DATE;
 
     private final UpdatingSource source;
+    private final String directory;
+    private final String filePrefix;
+    private final String fileSuffix;
 
-    HttpRunner(@NonNull String address) {
-        this.source = new HttpSource(address);
+    HttpDailyRunner(@NonNull String address, @NonNull String directory, @NonNull String filePrefix,
+                    @NonNull String fileSuffix, @NonNull String contentType) {
+        this.source = new HttpSource(address, contentType);
+        this.directory = directory;
+        this.filePrefix = filePrefix;
+        this.fileSuffix = fileSuffix;
     }
 
     @Override
     public void run() {
         this.source.update();
         if (this.source.fresh()) {
-            String outputPath = "data/" + LocalDateTime.now().format(DTF);
-            String fileName = LocalTime.now().toString();
+            String outputPath = directory + "/" + LocalDateTime.now().format(DTF);
+            String fileName = filePrefix + "-" + LocalTime.now().toString() + "." + fileSuffix;
             Sink sink = new FileSink(this.source.size(), outputPath, fileName,
                                      this.source.read(), Charset.forName("UTF-8"));
             sink.write();

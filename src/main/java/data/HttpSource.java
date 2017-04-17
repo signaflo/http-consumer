@@ -1,6 +1,6 @@
 package data;
 
-import execution.HttpRunner;
+import execution.HttpDailyRunner;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,18 +16,20 @@ import java.util.List;
 
 public class HttpSource implements UpdatingSource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HttpRunner.class);
+    private static final Logger LOG = LoggerFactory.getLogger(HttpDailyRunner.class);
     private static final int NOT_MODIFIED = 304;
     private static final int OK = 200;
 
     private final String address;
+    private final String contentType;
     private final URL url;
     private HttpURLConnection connection;
     private String etag = "";
     private HttpResponse httpResponse = null;
 
-    public HttpSource(@NonNull String address) {
+    public HttpSource(@NonNull String address, @NonNull String contentType) {
         this.address = address;
+        this.contentType = contentType;
         try {
             this.url = new URL(address);
         } catch (IOException e) {
@@ -79,7 +81,7 @@ public class HttpSource implements UpdatingSource {
     public void update() {
         try {
             connection = (HttpURLConnection) (this.url.openConnection());
-            connection.setRequestProperty("Content-Type", "text/plain; charset=utf-8");
+            connection.setRequestProperty("Content-Type", contentType);
             connection.setRequestProperty("If-None-Match", this.etag);
             connection.connect();
             HttpRequest httpRequest = new JavaHttpRequest(connection);
@@ -87,7 +89,6 @@ public class HttpSource implements UpdatingSource {
         } catch (IOException e) {
             LOG.error("Could not open connection to {}", address, e);
         }
-
     }
 
     @Override
