@@ -44,6 +44,7 @@ public class HttpSourceSpec {
     public void whenUpdateWithNonNullRestResponseThenEtagUpdated() {
         //final String url = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
         when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        when(httpResponse.getStatus()).thenReturn(200);
         when(httpResponse.getHeaderField("ETag")).thenReturn(Collections.singletonList("abc"));
         source.updateRestResponse(httpRequest);
         source.updateWith(httpRequest);
@@ -63,6 +64,7 @@ public class HttpSourceSpec {
     @Test
     public void whenUpdateEtagWithNullHeaderFieldThenException() {
         when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        when(httpResponse.getStatus()).thenReturn(200);
         source.updateRestResponse(httpRequest);
         exception.expect(RuntimeException.class);
         source.updateETag();
@@ -72,6 +74,7 @@ public class HttpSourceSpec {
     public void whenUpdateEtagWithEmptyETagHeaderThenException() {
         when(httpResponse.getHeaderField("ETag")).thenReturn(Collections.emptyList());
         when(httpRequest.makeRequest()).thenReturn(httpResponse);
+        when(httpResponse.getStatus()).thenReturn(200);
         source.updateRestResponse(httpRequest);
         exception.expect(RuntimeException.class);
         source.updateETag();

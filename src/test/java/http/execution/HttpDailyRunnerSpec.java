@@ -8,7 +8,7 @@ public class HttpDailyRunnerSpec {
     @Test
     @Ignore
     public void quickTest() throws Exception {
-        String url = "https://http.data.texas.gov/download/cuc7-ywmd/text/plain";
+        String url = "https://data.texas.gov/download/cuc7-ywmd/text/plain";
         //String url = "https://data.texas.gov/download/eiei-9rpf/application/octet-stream";
         String contentType = "text/plain; charset=UTF-8";
         //String contentType = "application/octet-stream";

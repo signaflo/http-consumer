@@ -56,6 +56,11 @@ public class HttpSource implements UpdatingSource {
 
     void updateRestResponse(final HttpRequest httpRequest) {
         this.httpResponse = httpRequest.makeRequest();
+        if (this.httpResponse != null &&
+            !(this.httpResponse.getStatus() == OK || this.httpResponse.getStatus() == NOT_MODIFIED)) {
+            throw new IllegalStateException(String.format("Expected response code to be %d or %d, but was %d",
+                                                          OK, NOT_MODIFIED, this.httpResponse.getStatus()));
+        }
     }
 
     String getEtag() {
@@ -81,6 +86,7 @@ public class HttpSource implements UpdatingSource {
     public void update() {
         try {
             connection = (HttpURLConnection) (this.url.openConnection());
+            connection.setRequestProperty("X-App-Token", "b7mZs9To48yt7Lver4EABPq0j");
             connection.setRequestProperty("Content-Type", contentType);
             connection.setRequestProperty("If-None-Match", this.etag);
             connection.connect();
