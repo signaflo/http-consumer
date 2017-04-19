@@ -3,6 +3,7 @@ package http.execution;
 import com.google.protobuf.util.JsonFormat;
 import com.google.transit.realtime.GtfsRealtime;
 import http.data.ContentType;
+import http.data.HttpSource;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -23,8 +24,9 @@ public class HttpDailyRunnerSpec {
         Map<String, String> requestProperties = new HashMap<>(3);
         requestProperties.put("Content-Type", contentType);
         requestProperties.put("X-App-Token", "b7mZs9To48yt7Lver4EABPq0j");
-        HttpDailyRunner runner = new HttpDailyRunner(url, "data/" + fileSuffix, "VehiclePositions",
-                                                     fileSuffix, requestProperties, ContentType.BINARY);
+        HttpSource source = new HttpSource(url, requestProperties);
+        HttpDailyRunner runner = new HttpDailyRunner(source, "data/" + fileSuffix, "VehiclePositions",
+                                                     fileSuffix, ContentType.BINARY);
         URL resource = new URL(url);
         GtfsRealtime.FeedMessage message = GtfsRealtime.FeedMessage.parseFrom(resource.openStream());
         for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {

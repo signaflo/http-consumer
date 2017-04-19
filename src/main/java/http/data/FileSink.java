@@ -14,15 +14,13 @@ public class FileSink implements Sink {
     private static final Logger LOG = LoggerFactory.getLogger(FileSink.class);
 
     private final int numChars;
-    private final String outputPath;
-    private final String fileName;
     private final InputStream inputStream;
     private final Charset charset;
+    private File file;
 
     public FileSink(int numChars, String outputPath, String fileName, InputStream inputStream, Charset charset) {
         this.numChars = numChars;
-        this.outputPath = outputPath;
-        this.fileName = fileName;
+        this.file = Sink.getFile(outputPath, fileName);
         this.inputStream = inputStream;
         this.charset = charset;
     }
@@ -33,9 +31,8 @@ public class FileSink implements Sink {
     }
 
     private void writeToFile() {
-        File file = getFile();
         if (file.exists()) {
-            IllegalStateException e = new IllegalStateException("The file already exists. No http.data will be saved.");
+            IllegalStateException e = new IllegalStateException("The file already exists. No data will be saved.");
             LOG.error("The file " + file.getAbsolutePath() + " already exists.", e);
             throw e;
         }
@@ -50,21 +47,8 @@ public class FileSink implements Sink {
             }
             writer.flush();
         } catch (IOException ioe) {
-            LOG.error("Error writing response http.data to file.", ioe);
+            LOG.error("Error writing response data to file.", ioe);
             throw new RuntimeException("The file " + file.getAbsolutePath() + " could not be created.");
         }
-    }
-
-    private File getFile() {
-        Path path = Paths.get(outputPath);
-        if (!Files.exists(path)) {
-            try {
-                Files.createDirectories(path);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        Path fullPath = Paths.get(outputPath, fileName);
-        return fullPath.toFile();
     }
 }
