@@ -28,7 +28,7 @@ public final class HttpDailyRunner implements Runnable {
 
     public HttpDailyRunner(@NonNull String address, @NonNull String directory, @NonNull String filePrefix,
                     @NonNull String fileSuffix, @NonNull String contentType) {
-        this.source = new HttpSource(address, contentType);
+        this.source = new HttpSource(address);
         this.directory = directory;
         this.filePrefix = filePrefix;
         this.fileSuffix = fileSuffix;

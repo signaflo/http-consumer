@@ -8,6 +8,8 @@ import http.HttpRequest;
 import http.HttpResponse;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -29,7 +31,9 @@ public class HttpSourceSpec {
     public void beforeMethod() {
         httpRequest = mock(HttpRequest.class);
         httpResponse = mock(HttpResponse.class);
-        source = new HttpSource(url, "text/plain; charset=UTF-8");
+        source = new HttpSource(url);
+        source.setRequestProperty("Content-Type", "text/plain; charset=UTF-8");
+        source.setRequestProperty("X-App-Token", "b7mZs9To48yt7Lver4EABPq0j");
     }
 
     @Test
@@ -91,6 +95,6 @@ public class HttpSourceSpec {
     public void whenInsantiatedWithNullURLThenNPE() {
         String url = null;
         exception.expect(NullPointerException.class);
-        new HttpSource(url, "text/plain; charset=UTF-8");
+        new HttpSource(url);
     }
 }

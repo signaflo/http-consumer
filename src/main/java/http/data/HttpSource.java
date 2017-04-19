@@ -12,7 +12,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HttpSource implements UpdatingSource {
 
@@ -21,21 +23,31 @@ public class HttpSource implements UpdatingSource {
     private static final int OK = 200;
 
     private final String address;
-    private final String contentType;
     private final URL url;
     private HttpURLConnection connection;
-    private String etag = "";
     private HttpResponse httpResponse = null;
+    private final Map<String, String> requestProperties;
 
-    public HttpSource(@NonNull String address, @NonNull String contentType) {
+    public HttpSource(@NonNull String address, @NonNull Map<String, String> requestProperties) {
         this.address = address;
-        this.contentType = contentType;
+        this.requestProperties = new HashMap<>(requestProperties);
+        if (!this.requestProperties.containsKey("If-None-Match")) {
+            this.requestProperties.put("If-None-Match", "");
+        }
         try {
             this.url = new URL(address);
         } catch (IOException e) {
             LOG.error("Could not create URL at address: {}", address, e);
             throw new RuntimeException(e);
         }
+    }
+
+    public HttpSource(@NonNull String address) {
+        this(address, new HashMap<>(3));
+    }
+
+    void setRequestProperty(@NonNull String key, @NonNull String value) {
+        this.requestProperties.put(key, value);
     }
 
     void updateWith(@NonNull final HttpRequest httpRequest) {
@@ -47,7 +59,7 @@ public class HttpSource implements UpdatingSource {
         if (this.httpResponse != null && this.httpResponse.getStatus() != NOT_MODIFIED) {
             List<String> headerField = this.httpResponse.getHeaderField("ETag");
             if (headerField != null && headerField.size() > 0) {
-                this.etag = headerField.get(0);
+                setRequestProperty("If-None-Match", headerField.get(0));
             } else {
                 throw new RuntimeException("HTTP ETag header expected but not found.");
             }
@@ -64,7 +76,7 @@ public class HttpSource implements UpdatingSource {
     }
 
     String getEtag() {
-        return this.etag;
+        return this.requestProperties.get("If-None-Match");
     }
 
     @Override
@@ -86,9 +98,9 @@ public class HttpSource implements UpdatingSource {
     public void update() {
         try {
             connection = (HttpURLConnection) (this.url.openConnection());
-            connection.setRequestProperty("X-App-Token", "b7mZs9To48yt7Lver4EABPq0j");
-            connection.setRequestProperty("Content-Type", contentType);
-            connection.setRequestProperty("If-None-Match", this.etag);
+            for (String key : this.requestProperties.keySet()) {
+                connection.setRequestProperty(key, this.requestProperties.get(key));
+            }
             connection.connect();
             HttpRequest httpRequest = new JavaHttpRequest(connection);
             this.updateWith(httpRequest);
