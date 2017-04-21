@@ -1,47 +1,48 @@
 package http.execution;
 
-import com.google.protobuf.util.JsonFormat;
-import com.google.transit.realtime.GtfsRealtime;
-import http.data.ContentType;
-import http.data.HttpSource;
+import http.data.PathProperties;
+import org.apache.http.client.fluent.Request;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-import java.net.URL;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class HttpDailyRunnerSpec {
+
+    @Rule
+    public ExpectedException exception = ExpectedException.none();
+
+    Request request = mock(Request.class);
+    String url = "http://localhost:8080";
+    Map<String, String> requestProperties = new HashMap<>();
+    PathProperties pathProperties = new PathProperties("vehiclePositions", "json", "data");
+
+    @Test
+    public void whenGettingResponseFailsThenRuntimeException() throws Exception {
+        when(request.execute()).thenThrow(IOException.class);
+        HttpDailyRunner runner = new HttpDailyRunner(url, requestProperties, pathProperties);
+        exception.expect(RuntimeException.class);
+        runner.getResponse(request);
+    }
 
     @Test
     @Ignore
     public void quickTest() throws Exception {
-        //String url = "https://data.texas.gov/download/cuc7-ywmd/text/plain";
-        String url = "https://data.texas.gov/download/eiei-9rpf/application/octet-stream";
-        //String contentType = "text/plain; charset=UTF-8";
-        String contentType = "application/octet-stream";
-        String fileSuffix = "pb";
+        String url = "https://data.texas.gov/download/cuc7-ywmd/text/plain";
+        //String url = "https://data.texas.gov/download/eiei-9rpf/application/octet-stream";
+        String contentType = "text/plain; charset=UTF-8";
         Map<String, String> requestProperties = new HashMap<>(3);
         requestProperties.put("Content-Type", contentType);
         requestProperties.put("X-App-Token", "b7mZs9To48yt7Lver4EABPq0j");
-        HttpSource source = new HttpSource(url, requestProperties);
-        HttpDailyRunner runner = new HttpDailyRunner(source, "data/" + fileSuffix, "VehiclePositions",
-                                                     fileSuffix, ContentType.BINARY);
-        URL resource = new URL(url);
-        GtfsRealtime.FeedMessage message = GtfsRealtime.FeedMessage.parseFrom(resource.openStream());
-        for (GtfsRealtime.FeedEntity entity : message.getEntityList()) {
-            if (entity.hasVehicle()) {
-                System.out.println(JsonFormat.printer().print(entity.getVehicleOrBuilder()));
-            }
-        }
+        HttpDailyRunner runner = new HttpDailyRunner(url, requestProperties, pathProperties);
         runner.run();
-        Thread.sleep(15000L);
-        runner.run();
-        Thread.sleep(15000L);
-        runner.run();
-//        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-//        executorService.scheduleWithFixedDelay(repeatRequest, 1, 15, TimeUnit.SECONDS);
-//        Thread.sleep(100 * 1000);
     }
 }
 
