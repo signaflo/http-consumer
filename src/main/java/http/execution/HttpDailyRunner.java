@@ -1,6 +1,7 @@
 package http.execution;
 
 import lombok.NonNull;
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import http.data.*;
@@ -96,7 +97,11 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     }
 
     private String getETag(@NonNull HttpResponse response) {
-            return response.getFirstHeader("ETag").getValue();
+        Header header = response.getFirstHeader("ETag");
+        if (header == null) {
+            return "";
+        }
+        return header.getValue();
     }
 
     @Override
