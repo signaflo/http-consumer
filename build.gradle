@@ -1,8 +1,22 @@
 apply plugin: 'java-library'
 apply plugin: 'jacoco'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+buildscript {
+    repositories {
+        jcenter()
+//      maven {
+//          url "https://plugins.gradle.org/m2/"
+//      }
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
+        //'net.ltgt.gradle:gradle-apt-plugin:0.9'
+    }
+}
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 task generateJavadoc(type: Javadoc) {
@@ -31,8 +45,8 @@ artifacts {
 
 dependencies {
 
-    implementation 'org.slf4j:slf4j-api:1.7.25'
-    implementation 'org.apache.httpcomponents:fluent-hc:4.5.3'
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.apache.httpcomponents:fluent-hc:4.5.3'
     compileOnly 'org.projectlombok:lombok:1.16.14'
 
     testCompile 'junit:junit:4.12'
