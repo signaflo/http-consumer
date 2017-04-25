@@ -40,6 +40,9 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     private boolean firstRun = true;
     private String etag = "";
 
+    private long waitMillis = 2500;
+    private int maxAttempts = 5;
+
     public HttpDailyRunner(String uri, Map<String, String> requestProperties, PathProperties pathProperties) {
         this.uri = uri;
         this.requestProperties = new HashMap<>(requestProperties);
@@ -106,6 +109,20 @@ public final class HttpDailyRunner implements HttpRunner<File> {
 
     @Override
     public void run() {
+        for (int i = 0; i <= maxAttempts; i++) {
+            try {
+                execute();
+            } catch (Exception e) {
+                if (i == maxAttempts) {
+                    logger.error("Maximum attempts, {}, exceeded. Execution has failed.", i, e);
+                } else {
+                    logger.error("Failed attempt. Retry #{} in {} seconds.", (i + 1), waitMillis/1000.0, e);
+                }
+            }
+        }
+    }
+
+    private void execute() throws Exception {
         final Request request;
         if (firstRun) {
             request = createRequest();
@@ -118,7 +135,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
         try {
             httpResponse = response.returnResponse();
         } catch (IOException e) {
-            logger.error("Error retrieving http response.", e);
+            logger.error("Error retrieving http response.");
             throw new RuntimeException(e);
         }
         int statusCode = getStatusCode(httpResponse);
