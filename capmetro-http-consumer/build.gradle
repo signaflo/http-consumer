@@ -1,5 +1,10 @@
 apply plugin: 'application'
 
+
+dependencies {
+    implementation project(':http-consumer-core')
+}
+
 // Define the main class for the application
 mainClassName = 'execution.CapMetroConsumer'
 
