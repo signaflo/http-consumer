@@ -37,7 +37,7 @@ public class CapMetroConsumer {
 
     private static List<Runnable> getRunners() {
 
-        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/razz/cuc7-ywmd/text/plain";
+        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
         final String tripUpdatesJsonURL = "https://data.texas.gov/download/mqtr-wwpy/text%2Fplain";
         final String vehiclePositionsPbURL = "https://data.texas.gov/download/eiei-9rpf/application%2Foctet-stream";
         final String tripUpdatesPbURL = "https://data.texas.gov/download/rmk2-acnw/application%2Foctet-stream";

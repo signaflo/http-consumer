@@ -1,6 +1,5 @@
 apply plugin: 'application'
 
-
 dependencies {
     implementation project(':http-consumer-core')
 }
