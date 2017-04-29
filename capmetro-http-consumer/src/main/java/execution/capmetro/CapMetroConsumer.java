@@ -1,16 +1,12 @@
-package execution;
+package execution.capmetro;
 
 import http.data.PathProperties;
-import http.execution.LoggedScheduledExecutor;
 import http.execution.HttpDailyRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -21,23 +17,38 @@ import java.util.concurrent.*;
  */
 public class CapMetroConsumer {
 
-    //private static final Logger logger = LoggerFactory.getLogger(CapMetroConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(CapMetroConsumer.class);
 
     public static void main(String[] args) {
+
         final long initialDelay = 1;
         final long delay = 30;
         final TimeUnit timeUnit = TimeUnit.SECONDS;
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
-        LoggedScheduledExecutor executor = new LoggedScheduledExecutor(executorService);
         List<Runnable> runners = getRunners();
+        List<ScheduledFuture<?>> tasks = new ArrayList<>(4);
         for (Runnable runner : runners) {
-            executorService.scheduleWithFixedDelay(runner, initialDelay, delay, timeUnit);
+            tasks.add(executorService.scheduleWithFixedDelay(runner, initialDelay, delay, timeUnit));
+        }
+        while (true) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ie) {
+                logger.error("Main thread execution interrupted. Exiting application...", ie);
+                System.exit(1);
+            }
+            for (ScheduledFuture<?> task : tasks) {
+                if (task.isDone()) {
+                    logger.error("Unexpected error during execution. Inspect application log. Exiting...");
+                    System.exit(1); //TODO: Add notifier instead of exiting.
+                }
+            }
         }
     }
 
     private static List<Runnable> getRunners() {
 
-        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
+        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/razzle/cuc7-ywmd/text/plain";
         final String tripUpdatesJsonURL = "https://data.texas.gov/download/mqtr-wwpy/text%2Fplain";
         final String vehiclePositionsPbURL = "https://data.texas.gov/download/eiei-9rpf/application%2Foctet-stream";
         final String tripUpdatesPbURL = "https://data.texas.gov/download/rmk2-acnw/application%2Foctet-stream";
@@ -77,7 +88,7 @@ public class CapMetroConsumer {
         Runnable tripUpdatesPbRunner = new HttpDailyRunner(tripUpdatesPbURL, requestProperties,
                                                            pathProperties);
 
-        return Arrays.asList(vehiclePositionsJsonRunner/*, tripUpdatesJsonRunner,
-                             vehiclePositionPbRunner, tripUpdatesPbRunner*/);
+        return Arrays.asList(tripUpdatesJsonRunner, vehiclePositionsJsonRunner,
+                             vehiclePositionPbRunner, tripUpdatesPbRunner);
     }
 }

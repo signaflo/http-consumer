@@ -33,7 +33,7 @@ public class HttpDailyRunnerSpec {
     @Test
     public void whenGettingResponseFailsThenRuntimeException() throws Exception {
         when(request.execute()).thenThrow(IOException.class);
-        HttpDailyRunner runner = new HttpDailyRunner(url, requestProperties, pathProperties);
+        HttpRunner runner = new HttpDailyRunner(url, requestProperties, pathProperties);
         exception.expect(RuntimeException.class);
         runner.getResponse(request);
     }
@@ -45,11 +45,11 @@ public class HttpDailyRunnerSpec {
         final long delay = 30;
         final TimeUnit timeUnit = TimeUnit.SECONDS;
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
-        LoggedScheduledExecutor executor = new LoggedScheduledExecutor(executorService);
         List<Runnable> runners = getRunners();
         for (Runnable runner : runners) {
             executorService.scheduleWithFixedDelay(runner, initialDelay, delay, timeUnit);
         }
+        Thread.sleep(5000);
     }
 
     private static List<Runnable> getRunners() {

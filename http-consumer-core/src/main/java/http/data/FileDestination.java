@@ -28,7 +28,7 @@ public class FileDestination implements Destination<File> {
      *              in which case it is ignored.
      * @param separator the text to separate the prefix from the name. This may be null, in which case it is ignored.
      */
-    public FileDestination(@NonNull String directory, String prefix, @NonNull String name, String suffix,
+    private FileDestination(@NonNull String directory, String prefix, @NonNull String name, String suffix,
                            String separator) {
         String fullName = "";
         if (prefix != null) fullName += prefix;

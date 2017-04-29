@@ -30,9 +30,9 @@
         <Logger name="http" level="error" additivity="false">
             <AppenderRef ref="RollingFile"/>
         </Logger>
-        <!--<Logger name="execution" level="error" additivity="false">-->
-            <!--<AppenderRef ref="RollingFile"/>-->
-        <!--</Logger>-->
+        <Logger name="execution.capmetro" level="error" additivity="true">
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
         <Root level="error">
             <AppenderRef ref="Console-Appender"/>
         </Root>

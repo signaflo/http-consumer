@@ -3,6 +3,7 @@ package http.execution;
 import lombok.NonNull;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
 import http.data.*;
 import org.apache.http.client.fluent.Request;
@@ -37,11 +38,9 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     private final String uri;
     private final Map<String, String> requestProperties;
     private final PathProperties pathProperties;
+
     private boolean firstRun = true;
     private String etag = "";
-
-    private long waitMillis = 2500;
-    private int maxAttempts = 5;
 
     public HttpDailyRunner(String uri, Map<String, String> requestProperties, PathProperties pathProperties) {
         this.uri = uri;
@@ -62,8 +61,8 @@ public final class HttpDailyRunner implements HttpRunner<File> {
 
     @Override
     public Response getResponse(@NonNull Request request) {
-        for (String s : requestProperties.keySet()) {
-            request.addHeader(s, requestProperties.get(s));
+        for (String key : requestProperties.keySet()) {
+            request.addHeader(key, requestProperties.get(key));
         }
         request.addHeader("If-None-Match", this.etag);
         try {
@@ -86,7 +85,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
 
     @Override
     public void write(@NonNull HttpResponse response, @NonNull Destination<File> destination) {
-        if (firstRun) {
+        if (this.firstRun) {
             throw new IllegalStateException("Cannot write to file on the first run.");
         }
         File file = destination.get();
@@ -99,7 +98,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
         }
     }
 
-    private String getETag(@NonNull HttpResponse response) {
+    private String getETag(@NonNull HttpMessage response) {
         Header header = response.getFirstHeader("ETag");
         if (header == null) {
             return "";
@@ -109,28 +108,57 @@ public final class HttpDailyRunner implements HttpRunner<File> {
 
     @Override
     public void run() {
+        int maxAttempts = 5; //TODO: Consider making static or retrieving from external source.
         for (int i = 0; i <= maxAttempts; i++) {
             try {
                 execute();
-            } catch (Exception e) {
-                if (i == maxAttempts) {
-                    logger.error("Maximum attempts, {}, exceeded. Execution has failed.", i, e);
-                } else {
-                    logger.error("Failed attempt. Retry #{} in {} seconds.", (i + 1), waitMillis/1000.0, e);
-                }
+            } catch (RuntimeException e) {
+                logRunException(maxAttempts, i, e);
             }
         }
     }
 
-    private void execute() throws Exception {
+    private void logRunException(int maxAttempts, int currentAttempt, RuntimeException e) {
+        if (currentAttempt == maxAttempts) {
+            logger.error("Maximum attempts, {}, exceeded. Execution has failed.", currentAttempt, e);
+            throw e;
+        } else {
+            long waitMillis = 2500; //TODO: Consider making static or retrieving from external source.
+            logger.error("Failed attempt. Retry #{} in {} seconds.", (currentAttempt + 1), waitMillis / 1000.0, e);
+        }
+    }
+
+    private void execute() {
+        final Request request = getRequest();
+        Response response = getResponse(request);
+        HttpResponse httpResponse = extractHttpResponse(response);
+        int statusCode = getStatusCode(httpResponse);
+        this.etag = getETag(httpResponse);
+        writeResponseToDestination(httpResponse, statusCode);
+    }
+
+    private void writeResponseToDestination(HttpResponse httpResponse, int statusCode) {
+        if (statusCode == OK) {
+            Destination<File> destination = createDestination();
+            write(httpResponse, destination);
+        } else if (statusCode != NOT_MODIFIED) {
+            throw new RuntimeException("Unexpected status code " + statusCode + ". Status should be " +
+                                       "equivalent to OK (200) or NOT_MODIFIED (304).");
+        }
+    }
+
+    private Request getRequest() {
         final Request request;
-        if (firstRun) {
+        if (this.firstRun) {
             request = createRequest();
-            firstRun = false;
+            this.firstRun = false;
         } else {
             request = createRequest();
         }
-        Response response = getResponse(request);
+        return request;
+    }
+
+    private HttpResponse extractHttpResponse(Response response) {
         HttpResponse httpResponse;
         try {
             httpResponse = response.returnResponse();
@@ -138,15 +166,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
             logger.error("Error retrieving http response.");
             throw new RuntimeException(e);
         }
-        int statusCode = getStatusCode(httpResponse);
-        this.etag = getETag(httpResponse);
-        if (statusCode == OK) {
-            Destination<File> destination = createDestination();
-            write(httpResponse, destination);
-        } else if (statusCode != NOT_MODIFIED) {
-            throw new RuntimeException("Unexpected status code " + statusCode +
-                                       ". Should be equivalent to OK (200) or NOT_MODIFIED (304).");
-        }
+        return httpResponse;
     }
 
 }

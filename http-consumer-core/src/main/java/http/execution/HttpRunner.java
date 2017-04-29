@@ -11,7 +11,7 @@ import org.apache.http.client.fluent.Response;
  *
  * @param <T> the type of destination the runner will write to.
  */
-public interface HttpRunner<T> extends Runnable {
+interface HttpRunner<T> extends Runnable {
 
     /**
      * Create a new connection to the underlying http source.
