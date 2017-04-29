@@ -6,7 +6,7 @@ import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 
 /**
- * A runner that takes a URL as input and outputs the body of the http response to a destination. With each run,
+ * A runner capable of outputting the body of an http response to some destination. With each run,
  * implementations may choose to write to the same destination, or to create a new destination on the fly.
  *
  * @param <T> the type of destination the runner will write to.
