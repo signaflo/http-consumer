@@ -121,7 +121,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
 
     private void logRunException(int maxAttempts, int currentAttempt, RuntimeException e) {
         if (currentAttempt == maxAttempts) {
-            logger.error("Maximum attempts, {}, exceeded. Execution has failed.", currentAttempt, e);
+            logger.error("Maximum attempts, {}, exceeded. Execution has failed.", maxAttempts, e);
             throw e;
         } else {
             long waitMillis = 2500; //TODO: Consider making static or retrieving from external source.
