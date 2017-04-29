@@ -77,7 +77,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     public Destination<File> createDestination() {
         String time = LocalTime.now().format(TIME_FORMATTER);
         String day  = LocalDate.now().format(DAY_FORMATTER);
-        String dirName = pathProperties.getDirectory() + "/" + day;
+        String dirName = pathProperties.getDirectory() + File.pathSeparator + day;
         String prefix = pathProperties.getPrefix();
         String suffix = pathProperties.getSuffix();
         return new FileDestination(dirName, prefix, time, suffix);
