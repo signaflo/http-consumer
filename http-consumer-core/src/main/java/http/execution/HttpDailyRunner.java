@@ -94,7 +94,8 @@ public final class HttpDailyRunner implements HttpRunner<File> {
             entity = response.getEntity();
             entity.writeTo(outputStream);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("IOException when attempting to write response to " + file.toString(), e);
+            throw new RuntimeException(e);
         }
     }
 
