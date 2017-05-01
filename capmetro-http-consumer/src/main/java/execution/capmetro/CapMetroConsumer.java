@@ -10,17 +10,23 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * The main application class. The application takes source URLs as input and outputs the body of
+ * The primary application thread. The application takes source URLs as input and outputs the body of
  * the http response to some destination. It does so by executing a collection of runnables, each runnable
- * corresponding to one source and one destination. Given a source and other metadata, the runnable must
- * be able to create a unique destination to save the data to with each run.
+ * corresponding to one source and one destination. Given a source and other metadata, the runnable
+ * creates a unique destination to save the data to with each run.
  */
-public class CapMetroConsumer {
+public class CapMetroConsumer extends Thread {
 
     private static final Logger logger = LoggerFactory.getLogger(CapMetroConsumer.class);
 
-    public static void main(String[] args) {
+    private boolean allTasksFailed = false;
 
+    boolean didAllTasksFail() {
+        return allTasksFailed;
+    }
+
+    @Override
+    public void run() {
         final long initialDelay = 1;
         final long delay = 30;
         final TimeUnit timeUnit = TimeUnit.SECONDS;
@@ -30,25 +36,30 @@ public class CapMetroConsumer {
         for (Runnable runner : runners) {
             tasks.add(executorService.scheduleWithFixedDelay(runner, initialDelay, delay, timeUnit));
         }
-        while (true) {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException ie) {
-                logger.error("Main thread execution interrupted. Exiting application...", ie);
-                System.exit(1);
+        while (!allTasksFailed) {
+            if (tasks.isEmpty()) {
+                logger.error("No more tasks remaining to execute.");
+                allTasksFailed = true;
+                executorService.shutdown();
+                break;
             }
+            List<ScheduledFuture<?>> markedForRemoval = new ArrayList<>(4);
             for (ScheduledFuture<?> task : tasks) {
                 if (task.isDone()) {
-                    logger.error("Unexpected error during execution. Inspect application log. Exiting...");
-                    System.exit(1); //TODO: Add notifier instead of exiting.
+                    logger.error("Unexpected error during task execution. Task will no longer run.");
+                    markedForRemoval.add(task);
                 }
             }
+            for (ScheduledFuture<?> task : markedForRemoval) {
+                task.cancel(true);
+            }
+            tasks.removeAll(markedForRemoval);
         }
     }
 
-    private static List<Runnable> getRunners() {
+    private List<Runnable> getRunners() {
 
-        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/razzle/cuc7-ywmd/text/plain";
+        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
         final String tripUpdatesJsonURL = "https://data.texas.gov/download/mqtr-wwpy/text%2Fplain";
         final String vehiclePositionsPbURL = "https://data.texas.gov/download/eiei-9rpf/application%2Foctet-stream";
         final String tripUpdatesPbURL = "https://data.texas.gov/download/rmk2-acnw/application%2Foctet-stream";
@@ -88,7 +99,7 @@ public class CapMetroConsumer {
         Runnable tripUpdatesPbRunner = new HttpDailyRunner(tripUpdatesPbURL, requestProperties,
                                                            pathProperties);
 
-        return Arrays.asList(tripUpdatesJsonRunner, vehiclePositionsJsonRunner,
+        return Arrays.asList(vehiclePositionsJsonRunner, tripUpdatesJsonRunner,
                              vehiclePositionPbRunner, tripUpdatesPbRunner);
     }
 }

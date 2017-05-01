@@ -14,8 +14,28 @@
                 </pattern>
             </PatternLayout>
         </Console>
-        <RollingFile name="RollingFile" fileName="${log-path}/${app-name}-${date:yyyy-MM-dd}.log"
-                     filePattern="${log-path}/$${date:yyyy-MM}/${app-name}-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingFile name="Main" fileName="${log-path}/main-${date:yyyy-MM-dd}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/main-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="CapMetro" fileName="${log-path}/capmetro-${date:yyyy-MM-dd}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/capmetro-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="Http" fileName="${log-path}/http-${date:yyyy-MM-dd}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/http-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
             </PatternLayout>
@@ -27,11 +47,14 @@
     </Appenders>
 
     <Loggers>
+        <Logger name="execution.capmetro.Main" level="error" additivity="true">
+            <AppenderRef ref="Main"/>
+        </Logger>
         <Logger name="http" level="error" additivity="false">
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="Http"/>
         </Logger>
         <Logger name="execution.capmetro" level="error" additivity="true">
-            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="CapMetro"/>
         </Logger>
         <Root level="error">
             <AppenderRef ref="Console-Appender"/>

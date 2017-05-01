@@ -77,7 +77,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     public Destination<File> createDestination() {
         String time = LocalTime.now().format(TIME_FORMATTER);
         String day  = LocalDate.now().format(DAY_FORMATTER);
-        String dirName = pathProperties.getDirectory() + File.pathSeparator + day;
+        String dirName = pathProperties.getDirectory() + File.separator + day;
         String prefix = pathProperties.getPrefix();
         String suffix = pathProperties.getSuffix();
         return new FileDestination(dirName, prefix, time, suffix);
@@ -114,17 +114,22 @@ public final class HttpDailyRunner implements HttpRunner<File> {
             try {
                 execute();
             } catch (RuntimeException e) {
-                logRunException(maxAttempts, i, e);
+                long waitMillis = 1000 * 30 * (i + 1); //TODO: Consider making static or retrieving from external source.
+                logRunException(maxAttempts, i, e, waitMillis);
+                try {
+                    Thread.sleep(waitMillis);
+                } catch (InterruptedException ie) {
+                    logger.error("{} thread interrupted.", this.getClass().getCanonicalName(), ie);
+                }
             }
         }
     }
 
-    private void logRunException(int maxAttempts, int currentAttempt, RuntimeException e) {
+    private void logRunException(int maxAttempts, int currentAttempt, RuntimeException e, long waitMillis) {
         if (currentAttempt == maxAttempts) {
             logger.error("Maximum attempts, {}, exceeded. Execution has failed.", maxAttempts, e);
             throw e;
         } else {
-            long waitMillis = 2500; //TODO: Consider making static or retrieving from external source.
             logger.error("Failed attempt. Retry #{} in {} seconds.", (currentAttempt + 1), waitMillis / 1000.0, e);
         }
     }

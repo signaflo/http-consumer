@@ -7,5 +7,5 @@ dependencies {
 }
 
 // Define the main class for the application
-mainClassName = 'execution.CapMetroConsumer'
+mainClassName = 'execution.capmetro.Main'
 

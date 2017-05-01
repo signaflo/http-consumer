@@ -1,5 +1,8 @@
 package http.data;
 
+/**
+ * A description of a file path.
+ */
 public class PathProperties {
 
     private final String prefix;

@@ -40,7 +40,7 @@ interface HttpRunner<T> extends Runnable {
      *
      * @return a new destination object.
      */
-    Destination createDestination();
+    Destination<T> createDestination();
 
     /**
      * Write the data received from the http response to the destination.
