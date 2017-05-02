@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 public class Main {
 
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final int MONITOR_INTERVAL_MILLIS = 1000 * 60 * 5; // 5 minutes.
-    private static final int MAXIMUM_RESTARTS = 50;
+    private static final int MONITOR_INTERVAL_MILLIS = 1000 * 5; // 5 minutes.
+    private static final int MAXIMUM_RESTARTS = 5;
 
     public static void main(String[] args) throws Exception {
         CapMetroConsumer capMetroConsumer = new CapMetroConsumer();

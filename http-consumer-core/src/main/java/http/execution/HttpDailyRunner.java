@@ -114,7 +114,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
             try {
                 execute();
             } catch (RuntimeException e) {
-                long waitMillis = 1000 * 30 * (i + 1); //TODO: Consider making static or retrieving from external source.
+                long waitMillis = 1000 * 1 * (i + 1); //TODO: Consider making static or retrieving from external source.
                 logRunException(maxAttempts, i, e, waitMillis);
                 try {
                     Thread.sleep(waitMillis);
