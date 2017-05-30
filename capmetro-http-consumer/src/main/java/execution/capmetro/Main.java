@@ -1,38 +1,35 @@
 package execution.capmetro;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import execution.ConsumerThreadController;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 
 /**
- * The main application class.
+ * [Insert class description]
  *
  * @author Jacob Rachiele
- *         Apr. 29, 2017
+ *         May. 16, 2017
  */
-public class Main {
+public class Main extends Application {
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
-    private static final int MONITOR_INTERVAL_MILLIS = 1000 * 5; // 5 minutes.
-    private static final int MAXIMUM_RESTARTS = 5;
-
-    public static void main(String[] args) throws Exception {
-        CapMetroConsumer capMetroConsumer = new CapMetroConsumer();
-        capMetroConsumer.start();
-        int numRestarts = 0;
-        while (numRestarts < MAXIMUM_RESTARTS) {
-            try {
-                Thread.sleep(MONITOR_INTERVAL_MILLIS);
-            } catch (InterruptedException ie) {
-                logger.error("Main thread execution interrupted. Exiting application...", ie);
-                System.exit(1);
-            }
-            if (capMetroConsumer.didAllTasksFail()) {
-                capMetroConsumer = new CapMetroConsumer();
-                capMetroConsumer.start();
-                numRestarts++;
-            }
-        }
-        logger.error("Maximum number of application restarts, " + MAXIMUM_RESTARTS + ", exceeded. Shutting down JVM.");
-        System.exit(1);
+    public static void main(String... args) {
+        Application.launch(args);
     }
+
+    @Override
+    public void start(Stage stage) {
+        stage.setTitle("HTTP Consumer");
+        Button btn = new Button("Start Execution");
+        btn.setOnAction(event -> new Thread(new ConsumerThreadController()).start());
+        StackPane root = new StackPane();
+        root.getChildren().add(btn);
+        stage.setScene(new Scene(root, 300, 250));
+        stage.setOnCloseRequest(event -> System.exit(0));
+        stage.show();
+    }
+
+
 }

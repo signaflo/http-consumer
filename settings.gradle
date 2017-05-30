@@ -1,2 +1,2 @@
 rootProject.name = 'http-consumer'
-include 'http-consumer-core', 'capmetro-http-consumer'
+include 'http-consumer-core', 'capmetro-http-consumer', 'http-consumer-ui'

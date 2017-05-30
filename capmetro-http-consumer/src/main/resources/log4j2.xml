@@ -51,7 +51,7 @@
     </Appenders>
 
     <Loggers>
-        <Logger name="execution.capmetro.Main" level="error" additivity="true">
+        <Logger name="execution.ConsumerThreadController" level="error" additivity="true">
             <AppenderRef ref="Main"/>
         </Logger>
         <Logger name="http" level="error" additivity="true">

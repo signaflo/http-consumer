@@ -1,65 +1,88 @@
-package execution.capmetro;
+package execution;
 
 import http.data.PathProperties;
 import http.execution.HttpDailyRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
- * The primary application thread. The application takes source URLs as input and outputs the body of
- * the http response to some destination. It does so by executing a collection of runnables, each runnable
- * corresponding to one source and one destination. Given a source and other metadata, the runnable
- * creates a unique destination to save the data to with each run.
+ * The main application class.
+ *
+ * @author Jacob Rachiele
+ *         Apr. 29, 2017
  */
-public class CapMetroConsumer extends Thread {
+public class ConsumerThreadController implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(CapMetroConsumer.class);
-
-    private boolean allTasksFailed = false;
-
-    boolean didAllTasksFail() {
-        return allTasksFailed;
-    }
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerThreadController.class);
+    private static final int MONITOR_INTERVAL_MILLIS = 1000 * 5; // 5 minutes.
+    private static final int MAXIMUM_RESTARTS = 5;
 
     @Override
     public void run() {
-        final long initialDelay = 1;
-        final long delay = 30;
-        final TimeUnit timeUnit = TimeUnit.SECONDS;
+        Properties properties = getProperties();
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
-        List<Runnable> runners = getRunners();
-        List<ScheduledFuture<?>> tasks = new ArrayList<>(4);
-        for (Runnable runner : runners) {
-            tasks.add(executorService.scheduleWithFixedDelay(runner, initialDelay, delay, timeUnit));
+        ConsumerThread consumerThread = new ConsumerThread(executorService, getRunners());
+        consumerThread.start();
+        ScheduledExecutorService monitor = Executors.newSingleThreadScheduledExecutor();
+        MonitorThread monitorThread = new MonitorThread(consumerThread, executorService);
+        monitor.scheduleWithFixedDelay(monitorThread, 100L,
+                                               MONITOR_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+    }
+
+    private class MonitorThread extends Thread {
+
+        private int numRestarts = 0;
+        private ConsumerThread consumerThread;
+        private ScheduledExecutorService executorService;
+
+        MonitorThread(ConsumerThread consumerThread, ScheduledExecutorService executorService) {
+            this.consumerThread = consumerThread;
+            this.executorService = executorService;
         }
-        while (!allTasksFailed) {
-            if (tasks.isEmpty()) {
-                logger.error("No more tasks remaining to execute.");
-                allTasksFailed = true;
+
+        @Override
+        public void run() {
+            if (numRestarts >= MAXIMUM_RESTARTS) {
+                logger.error("Maximum number of application restarts, " + MAXIMUM_RESTARTS + ", exceeded." +
+                             " Shutting down JVM.");
                 executorService.shutdown();
-                break;
+                System.exit(1);
             }
-            List<ScheduledFuture<?>> markedForRemoval = new ArrayList<>(4);
-            for (ScheduledFuture<?> task : tasks) {
-                if (task.isDone()) {
-                    logger.error("Unexpected error during task execution. Task will no longer run.");
-                    markedForRemoval.add(task);
-                }
+            if (consumerThread.didAllTasksFail()) {
+                consumerThread = new ConsumerThread(executorService, getRunners());
+                consumerThread.start();
+                numRestarts++;
             }
-            for (ScheduledFuture<?> task : markedForRemoval) {
-                task.cancel(true);
-            }
-            tasks.removeAll(markedForRemoval);
+        }
+    }
+
+    private Properties getProperties() {
+        Path path = FileSystems.getDefault().getPath("etc", "capmetro.properties");
+        try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.ISO_8859_1)) {
+            Properties properties = new Properties();
+            properties.load(reader);
+            return properties;
+        } catch (IOException ie) {
+            logger.error("Could not create reader at path " + path);
+            throw new RuntimeException(ie);
         }
     }
 
     private List<Runnable> getRunners() {
 
-        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/razzle/cuc7-ywmd/text/plain";
+        final String vehiclePositionsJsonURL = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
         final String tripUpdatesJsonURL = "https://data.texas.gov/download/mqtr-wwpy/text%2Fplain";
         final String vehiclePositionsPbURL = "https://data.texas.gov/download/eiei-9rpf/application%2Foctet-stream";
         final String tripUpdatesPbURL = "https://data.texas.gov/download/rmk2-acnw/application%2Foctet-stream";
