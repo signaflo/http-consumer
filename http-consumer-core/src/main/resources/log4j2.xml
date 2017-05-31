@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="60">
+    <Properties>
+        <Property name="log-path">logs</Property>
+        <Property name="archive">${log-path}/archive</Property>
+        <Property name="app-name">http-consumer</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console-Appender" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </Console>
+        <SMTP name="CapMetroEmail" subject="Error Log" from="capmetro.http.consumer@gmail.com"
+              to="jrachiele7@gmail.com" smtpHost="smtp.gmail.com" smtpPort="465" smtpUsername="capmetro.http.consumer"
+              smtpPassword="Time Series Analysis" smtpProtocol="smtps" bufferSize="50">
+        </SMTP>
+        <RollingFile name="Main" fileName="${log-path}/main-${date:yyyy-MM-dd}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/main-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="CapMetroFile" fileName="${log-path}/capmetro-${date:yyyy-MM-dd}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/capmetro-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+        <RollingFile name="Http" fileName="${log-path}/http-${date:yyyy-MM-dd}.log"
+                     filePattern="${log-path}/$${date:yyyy-MM}/http-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %p %c{1} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+                <SizeBasedTriggeringPolicy size="250 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="http" level="error" additivity="true">
+            <AppenderRef ref="Main"/>
+        </Logger>
+        <Logger name="http.execution.PeriodicConsumer" level="error" additivity="true">
+            <AppenderRef ref="CapMetroEmail"/>
+        </Logger>
+        <Logger name="http.execution" level="error" additivity="true">
+            <AppenderRef ref="CapMetroFile"/>
+        </Logger>
+        <Root level="error">
+            <AppenderRef ref="Console-Appender"/>
+        </Root>
+    </Loggers>
+</Configuration>

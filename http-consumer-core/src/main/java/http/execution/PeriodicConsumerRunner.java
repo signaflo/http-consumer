@@ -4,16 +4,11 @@ import http.data.PathProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -22,32 +17,53 @@ import java.util.concurrent.TimeUnit;
  * @author Jacob Rachiele
  *         Apr. 29, 2017
  */
-public class ConsumerThreadController implements Runnable {
+public class PeriodicConsumerRunner implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsumerThreadController.class);
-    private static final int MONITOR_INTERVAL_MILLIS = 1000 * 5; // 5 minutes.
+    private static final Logger logger = LoggerFactory.getLogger(PeriodicConsumerRunner.class);
+    private static final long MONITOR_INTERVAL_MILLIS = 1000 * 30L; // 5 minutes.
     private static final int MAXIMUM_RESTARTS = 5;
+    private final int initialCores;
+    private final List<Runnable> initialRunners;
+
+    private PeriodicConsumerRunner(final int initialCores, final List<Runnable> initialRunners) {
+        this.initialCores = initialCores;
+        this.initialRunners = new ArrayList<>(initialRunners);
+    }
+
+    PeriodicConsumerRunner() {
+        this(4, getRunners());
+    }
 
     @Override
     public void run() {
-        Properties properties = getProperties();
-        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4);
-        ConsumerThread consumerThread = new ConsumerThread(executorService, getRunners());
-        consumerThread.start();
+        //Properties properties = getProperties();
+        ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(initialCores);
+        PeriodicConsumer periodicConsumer = new PeriodicConsumer(executorService, getRunners());
+        ScheduledExecutorService periodicRunner = Executors.newSingleThreadScheduledExecutor();
         ScheduledExecutorService monitor = Executors.newSingleThreadScheduledExecutor();
-        MonitorThread monitorThread = new MonitorThread(consumerThread, executorService);
+        MonitorThread monitorThread = new MonitorThread(periodicConsumer, executorService);
+        periodicRunner.scheduleWithFixedDelay(periodicConsumer, 100L, 1000 * 10L, TimeUnit.MILLISECONDS);
         monitor.scheduleWithFixedDelay(monitorThread, 100L,
                                                MONITOR_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+//        try {
+//            Thread.sleep(3000);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        List<Runnable> runners = getRunners();
+//        for (Runnable runner : runners) {
+//            periodicConsumer.addRunnable(runner);
+//        }
     }
 
     private class MonitorThread extends Thread {
 
         private int numRestarts = 0;
-        private ConsumerThread consumerThread;
-        private ScheduledExecutorService executorService;
+        private PeriodicConsumer periodicConsumer;
+        private ScheduledThreadPoolExecutor executorService;
 
-        MonitorThread(ConsumerThread consumerThread, ScheduledExecutorService executorService) {
-            this.consumerThread = consumerThread;
+        MonitorThread(PeriodicConsumer periodicConsumer, ScheduledThreadPoolExecutor executorService) {
+            this.periodicConsumer = periodicConsumer;
             this.executorService = executorService;
         }
 
@@ -59,27 +75,28 @@ public class ConsumerThreadController implements Runnable {
                 executorService.shutdown();
                 System.exit(1);
             }
-            if (consumerThread.didAllTasksFail()) {
-                consumerThread = new ConsumerThread(executorService, getRunners());
-                consumerThread.start();
+            if (periodicConsumer.didAllTasksFail()) {
+                periodicConsumer = new PeriodicConsumer(executorService, new ArrayList<>(initialRunners));
+                ScheduledExecutorService periodicRunner = Executors.newSingleThreadScheduledExecutor();
+                periodicRunner.scheduleWithFixedDelay(periodicConsumer, 1L, 15L, TimeUnit.SECONDS);
                 numRestarts++;
             }
         }
     }
 
-    private Properties getProperties() {
-        Path path = FileSystems.getDefault().getPath("etc", "capmetro.properties");
-        try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.ISO_8859_1)) {
-            Properties properties = new Properties();
-            properties.load(reader);
-            return properties;
-        } catch (IOException ie) {
-            logger.error("Could not create reader at path " + path);
-            throw new RuntimeException(ie);
-        }
-    }
+//    private Properties getProperties() {
+//        Path path = FileSystems.getDefault().getPath("etc", "capmetro.properties");
+//        try(BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.ISO_8859_1)) {
+//            Properties properties = new Properties();
+//            properties.load(reader);
+//            return properties;
+//        } catch (IOException ie) {
+//            logger.error("Could not create reader at path " + path);
+//            throw new RuntimeException(ie);
+//        }
+//    }
 
-    private List<Runnable> getRunners() {
+    public static List<Runnable> getRunners() {
 
         final String vehiclePositionsJsonURL = "https://data.austintexas.gov/download/cuc7-ywmd/text/plain";
         final String tripUpdatesJsonURL = "https://data.texas.gov/download/mqtr-wwpy/text%2Fplain";
@@ -121,7 +138,7 @@ public class ConsumerThreadController implements Runnable {
         Runnable tripUpdatesPbRunner = new HttpDailyRunner(tripUpdatesPbURL, requestProperties,
                                                            pathProperties);
 
-        return Arrays.asList(vehiclePositionsJsonRunner/*, tripUpdatesJsonRunner,
-                             vehiclePositionPbRunner, tripUpdatesPbRunner*/);
+        return Arrays.asList(/*vehiclePositionsJsonRunner/*, tripUpdatesJsonRunner,
+                             vehiclePositionPbRunner, */tripUpdatesPbRunner);
     }
 }
