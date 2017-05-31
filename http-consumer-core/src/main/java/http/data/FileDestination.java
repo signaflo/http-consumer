@@ -1,6 +1,8 @@
 package http.data;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +15,7 @@ import java.nio.file.Paths;
  * It's main utility is that it breaks down and encapsulates various pieces of information that
  * make up the full path of the file.
  */
+@EqualsAndHashCode @ToString
 public class FileDestination implements Destination<File> {
 
     private final File file;

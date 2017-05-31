@@ -11,6 +11,7 @@ import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -32,16 +33,9 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         PathPropertiesData data = new PathPropertiesData();
-        Node pathPropertiesView = new PathPropertiesView(data);
-        HBox hbox = new HBox();
-        Text text = new Text();
-        text.textProperty().bind(data.getPathPropertiesString());
-        hbox.getChildren().add(text);
-        VBox root = new VBox(10, pathPropertiesView, hbox);
+        Node httpDailyRunnerView = new HttpDailyRunnerView(data);
+        FlowPane root = new FlowPane(httpDailyRunnerView);
         Scene scene = new Scene(root, 600, 400);
-        text.setLayoutX(-text.getLayoutBounds().getMinX());
-        text.setLayoutY(-text.getLayoutBounds().getMinY());
-        System.out.println(text.getLayoutBounds().getMaxY());
         stage.setScene(scene);
         stage.show();
     }

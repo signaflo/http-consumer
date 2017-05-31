@@ -1,7 +1,6 @@
-package execution;
+package http.execution;
 
 import http.data.PathProperties;
-import http.execution.HttpDailyRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
