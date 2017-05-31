@@ -2,6 +2,7 @@ package http.data.model;
 
 import http.data.PathProperties;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * [Insert class description]
@@ -11,12 +12,23 @@ import javafx.beans.property.SimpleStringProperty;
  */
 public class PathPropertiesData {
 
-    private SimpleStringProperty prefixProperty;
-    private SimpleStringProperty suffixProperty;
-    private SimpleStringProperty directorProperty;
+    private PathProperties pathProperties = new PathProperties("trips", "json", "data");
+    private StringProperty pathPropertiesString = new SimpleStringProperty(pathProperties.toString());
 
     public PathPropertiesData() {
+    }
 
+    public final void createPathProperties(String prefix, String suffix, String directory) {
+        this.pathProperties = new PathProperties(prefix, suffix, directory);
+        this.pathPropertiesString.setValue(this.pathProperties.toString());
+    }
+
+    public final PathProperties getPathProperties() {
+        return this.pathProperties;
+    }
+
+    public final StringProperty getPathPropertiesString() {
+        return this.pathPropertiesString;
     }
 
 

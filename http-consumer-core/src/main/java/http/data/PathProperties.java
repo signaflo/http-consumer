@@ -1,8 +1,12 @@
 package http.data;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
 /**
  * A description of a file path.
  */
+@EqualsAndHashCode @ToString
 public class PathProperties {
 
     private final String prefix;
