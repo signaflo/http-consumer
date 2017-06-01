@@ -17,9 +17,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * corresponding to one source and one destination. Given a source and other metadata, the runnable
  * creates a unique destination to save the data to with each run.
  */
-public final class Consumer implements Runnable {
+public final class Consumer {
 
-    private static final Logger logger = LoggerFactory.getLogger(Consumer.class);
     private static final int MAX_CORE_POOL_SIZE = 10;
 
     private final ScheduledThreadPoolExecutor executorService;
@@ -43,27 +42,12 @@ public final class Consumer implements Runnable {
         }
     }
 
-    private boolean allTasksFailed() {
-        return this.isInitialized.get() && this.tasks.get().isEmpty();
+    boolean allTasksFailed() {
+        return /*this.isInitialized.get() && */this.tasks.get().isEmpty();
     }
 
-    @Override
-    public void run() {
-            if (allTasksFailed()) {
-                logger.warn("There are no tasks remaining to execute.");
-            } else {
-                List<ScheduledFuture<?>> markedForRemoval = new ArrayList<>(runners.get().size());
-                for (ScheduledFuture<?> task : tasks.get()) {
-                    if (task.isDone()) {
-                        logger.error("Unexpected error during task execution. The task will no longer run.");
-                        markedForRemoval.add(task);
-                    }
-                }
-                for (ScheduledFuture<?> task : markedForRemoval) {
-                    task.cancel(true);
-                }
-                tasks.get().removeAll(markedForRemoval);
-            }
+    List<ScheduledFuture<?>> getTasks() {
+        return this.tasks.get();
     }
 
     void addRunnable(Runnable runnable, final int initialDelay, final int delay, final TimeUnit timeUnit) {

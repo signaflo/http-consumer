@@ -1,8 +1,5 @@
 package http.execution;
 
-import http.data.PathProperties;
-
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,22 +13,26 @@ import java.util.concurrent.TimeUnit;
  * @author Jacob Rachiele
  *         Apr. 29, 2017
  */
-class ConsumerExecutor {
+final class ConsumerExecutor {
 
     private final Consumer consumer;
+    private long initialDelay = 1L;
+    private long monitorInterval = 60 * 60L;
+    private TimeUnit timeUnit = TimeUnit.SECONDS;
 
     private ConsumerExecutor(final int initialCores, final List<Runnable> initialRunners) {
-        ScheduledExecutorService periodicRunner = Executors.newSingleThreadScheduledExecutor();
+        ScheduledExecutorService consumerMonitorService = Executors.newSingleThreadScheduledExecutor();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(initialCores);
         this.consumer = new Consumer(executorService, initialRunners);
-        periodicRunner.scheduleWithFixedDelay(consumer, 100L, 1000 * 10L, TimeUnit.MILLISECONDS);
+        Runnable consumerMonitor = new ConsumerMonitor(consumer);
+        consumerMonitorService.scheduleWithFixedDelay(consumerMonitor, initialDelay, monitorInterval, timeUnit);
     }
 
     ConsumerExecutor() {
         this(0, new ArrayList<>());
     }
 
-    final Consumer getConsumer() {
+    Consumer getConsumer() {
         return this.consumer;
     }
 
