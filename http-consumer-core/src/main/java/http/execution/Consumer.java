@@ -13,9 +13,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * corresponding to one source and one destination. Given a source and other metadata, the runnable
  * creates a unique destination to save the data to with each run.
  */
-public class PeriodicConsumer implements Runnable {
+public class Consumer implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(PeriodicConsumer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Consumer.class);
     private static final int MAX_CORE_POOL_SIZE = 10;
 
     private final ScheduledThreadPoolExecutor executorService;
@@ -27,7 +27,7 @@ public class PeriodicConsumer implements Runnable {
     private final TimeUnit timeUnit = TimeUnit.SECONDS;
 
 
-    PeriodicConsumer(ScheduledThreadPoolExecutor executorService, List<Runnable> runners) {
+    Consumer(ScheduledThreadPoolExecutor executorService, List<Runnable> runners) {
         this.executorService = executorService;
         this.runners = new ArrayList<>(runners);
         this.tasks = new ArrayList<>(this.runners.size());
@@ -39,7 +39,7 @@ public class PeriodicConsumer implements Runnable {
         }
     }
 
-    synchronized boolean allTasksFailed() {
+    private boolean allTasksFailed() {
         return this.isInitialized.get() && this.tasks.isEmpty();
     }
 

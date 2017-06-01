@@ -11,6 +11,6 @@ public final class Main {
      * @param args arguments provided at startup.
      */
     public static void main(String... args) {
-        new ExecutionInitializer();
+        new ConsumerExecutor();
     }
 }

@@ -44,7 +44,7 @@
         <Logger name="http.data" level="error" additivity="true">
             <AppenderRef ref="Http"/>
         </Logger>
-        <Logger name="http.execution.PeriodicConsumer" level="error" additivity="true">
+        <Logger name="http.execution.Consumer" level="error" additivity="true">
             <AppenderRef ref="CapMetroEmail"/>
         </Logger>
         <Logger name="http.execution" level="error" additivity="true">

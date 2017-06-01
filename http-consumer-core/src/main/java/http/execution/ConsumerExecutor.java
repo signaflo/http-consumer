@@ -1,8 +1,6 @@
 package http.execution;
 
 import http.data.PathProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
@@ -18,19 +16,15 @@ import java.util.concurrent.TimeUnit;
  * @author Jacob Rachiele
  *         Apr. 29, 2017
  */
-class ExecutionInitializer {
+class ConsumerExecutor {
 
-    private static final long MONITOR_INTERVAL_MILLIS = 1000 * 30L;
+    private final Consumer consumer;
 
-    private ExecutionInitializer(final int initialCores, final List<Runnable> initialRunners) {
+    private ConsumerExecutor(final int initialCores, final List<Runnable> initialRunners) {
         ScheduledExecutorService periodicRunner = Executors.newSingleThreadScheduledExecutor();
-        ScheduledExecutorService monitor = Executors.newSingleThreadScheduledExecutor();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(initialCores);
-        PeriodicConsumer periodicConsumer = new PeriodicConsumer(executorService, initialRunners);
-        ConsumerMonitor monitorThread = new ConsumerMonitor(periodicConsumer, executorService, initialRunners);
-        periodicRunner.scheduleWithFixedDelay(periodicConsumer, 100L, 1000 * 10L, TimeUnit.MILLISECONDS);
-        monitor.scheduleWithFixedDelay(monitorThread, MONITOR_INTERVAL_MILLIS,
-                                       MONITOR_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
+        this.consumer = new Consumer(executorService, initialRunners);
+        periodicRunner.scheduleWithFixedDelay(consumer, 100L, 1000 * 10L, TimeUnit.MILLISECONDS);
         try {
             Thread.sleep(3000);
         } catch (Exception e) {
@@ -38,12 +32,16 @@ class ExecutionInitializer {
         }
         List<Runnable> runners = getRunners();
         for (Runnable runner : runners) {
-            periodicConsumer.addRunnable(runner);
+            consumer.addRunnable(runner);
         }
     }
 
-    ExecutionInitializer() {
+    ConsumerExecutor() {
         this(0, new ArrayList<>());
+    }
+
+    final Consumer getConsumer() {
+        return this.consumer;
     }
 
     //    private Properties getProperties() {
