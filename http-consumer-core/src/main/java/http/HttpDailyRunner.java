@@ -1,11 +1,12 @@
-package http.execution;
+package http;
 
+import data.FileUtils;
+import data.PathProperties;
 import lombok.NonNull;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpMessage;
 import org.apache.http.HttpResponse;
-import http.data.*;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     private boolean firstRun = true;
     private String etag = "";
 
-    public HttpDailyRunner(String uri, Map<String, String> requestProperties, PathProperties pathProperties) {
+    HttpDailyRunner(String uri, Map<String, String> requestProperties, PathProperties pathProperties) {
         this.uri = uri;
         this.requestProperties = new HashMap<>(requestProperties);
         this.pathProperties = pathProperties;
@@ -74,24 +75,22 @@ public final class HttpDailyRunner implements HttpRunner<File> {
     }
 
     @Override
-    public Destination<File> createDestination() {
+    public File createDestination() {
         String time = LocalTime.now().format(TIME_FORMATTER);
         String day  = LocalDate.now().format(DAY_FORMATTER);
         String dirName = pathProperties.getDirectory() + File.separator + day;
         String prefix = pathProperties.getPrefix();
         String suffix = pathProperties.getSuffix();
-        return new FileDestination(dirName, prefix, time, suffix);
+        return FileUtils.createFile(dirName, prefix, time, suffix);
     }
 
     @Override
-    public void write(@NonNull HttpResponse response, @NonNull Destination<File> destination) {
+    public void write(@NonNull HttpResponse response, @NonNull File file) {
         if (this.firstRun) {
             throw new IllegalStateException("Cannot write to file on the first run.");
         }
-        File file = destination.get();
-        HttpEntity entity;
         try (BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(file))){
-            entity = response.getEntity();
+            HttpEntity entity = response.getEntity();
             entity.writeTo(outputStream);
         } catch (IOException e) {
             logger.error("IOException when attempting to write response to " + file.toString(), e);
@@ -99,7 +98,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
         }
     }
 
-    private String getETag(@NonNull HttpMessage response) {
+    private static String getETag(@NonNull HttpMessage response) {
         Header header = response.getFirstHeader("ETag");
         if (header == null) {
             return "";
@@ -114,7 +113,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
             try {
                 execute();
             } catch (RuntimeException e) {
-                long waitMillis = 1000 * 1 * (i + 1); //TODO: Consider making static or retrieving from external source.
+                long waitMillis = 1000 * (i + 1); //TODO: Consider making static or retrieving from external source.
                 logRunException(maxAttempts, i, e, waitMillis);
                 try {
                     Thread.sleep(waitMillis);
@@ -125,7 +124,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
         }
     }
 
-    private void logRunException(int maxAttempts, int currentAttempt, RuntimeException e, long waitMillis) {
+    private static void logRunException(int maxAttempts, int currentAttempt, RuntimeException e, long waitMillis) {
         if (currentAttempt == maxAttempts) {
             logger.error("Maximum attempts, {}, exceeded. Execution has failed.", maxAttempts, e);
             throw e;
@@ -145,7 +144,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
 
     private void writeResponseToDestination(HttpResponse httpResponse, int statusCode) {
         if (statusCode == OK) {
-            Destination<File> destination = createDestination();
+            File destination = createDestination();
             write(httpResponse, destination);
         } else if (statusCode != NOT_MODIFIED) {
             throw new RuntimeException("Unexpected status code " + statusCode + ". Status should be " +
@@ -164,7 +163,7 @@ public final class HttpDailyRunner implements HttpRunner<File> {
         return request;
     }
 
-    private HttpResponse extractHttpResponse(Response response) {
+    private static HttpResponse extractHttpResponse(Response response) {
         HttpResponse httpResponse;
         try {
             httpResponse = response.returnResponse();

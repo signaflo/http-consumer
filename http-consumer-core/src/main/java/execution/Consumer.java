@@ -1,9 +1,10 @@
-package http.execution;
+package execution;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * corresponding to one source and one destination. Given a source and other metadata, the runnable
  * creates a unique destination to save the data to with each run.
  */
-public final class Consumer {
+final class Consumer {
 
     private static final int MAX_CORE_POOL_SIZE = 10;
 
@@ -25,6 +26,9 @@ public final class Consumer {
     private final AtomicReference<List<Runnable>> runners;
     private final AtomicReference<List<ScheduledFuture<?>>> tasks;
     private final AtomicBoolean isInitialized = new AtomicBoolean(false);
+    private final long defaultInitialDelay = 1L;
+    private final long defaultDelay = 30L;
+    private final TimeUnit defaultTimeUnit = TimeUnit.SECONDS;
 
 
     Consumer(ScheduledThreadPoolExecutor executorService, List<Runnable> runners) {
@@ -35,22 +39,19 @@ public final class Consumer {
             this.isInitialized.set(true);
         }
         for (Runnable runner : runners) {
-            long initialDelay = 1L;
-            long delay = 30L;
-            TimeUnit timeUnit = TimeUnit.SECONDS;
-            tasks.get().add(executorService.scheduleWithFixedDelay(runner, initialDelay, delay, timeUnit));
+            tasks.get().add(executorService.scheduleWithFixedDelay(runner, defaultInitialDelay, defaultDelay, defaultTimeUnit));
         }
     }
 
-    boolean allTasksFailed() {
-        return /*this.isInitialized.get() && */this.tasks.get().isEmpty();
+    boolean allTasksRemoved() {
+        return this.isInitialized.get() && this.tasks.get().isEmpty();
     }
 
     List<ScheduledFuture<?>> getTasks() {
         return this.tasks.get();
     }
 
-    void addRunnable(Runnable runnable, final int initialDelay, final int delay, final TimeUnit timeUnit) {
+    void addRunnable(Runnable runnable, final long initialDelay, final long delay, final TimeUnit timeUnit) {
         final int currentPoolSize = this.executorService.getCorePoolSize();
         if (this.executorService.getCorePoolSize() < MAX_CORE_POOL_SIZE) {
             this.executorService.setCorePoolSize(currentPoolSize + 1);
@@ -58,5 +59,39 @@ public final class Consumer {
         this.runners.get().add(runnable);
         this.isInitialized.set(true);
         this.tasks.get().add(this.executorService.scheduleWithFixedDelay(runnable, initialDelay, delay, timeUnit));
+    }
+
+    void addRunnable(Runnable runnable) {
+        addRunnable(runnable, defaultInitialDelay, defaultDelay, defaultTimeUnit);
+    }
+
+    static final class Monitor implements Runnable {
+
+        private static final Logger logger = LoggerFactory.getLogger(Monitor.class);
+
+        private final Consumer consumer;
+
+        Monitor(final Consumer consumer) {
+            this.consumer = consumer;
+        }
+
+        @Override
+        public void run() {
+            if (consumer.allTasksRemoved()) {
+                logger.warn("There are no tasks available to execute.");
+            } else {
+                Collection<ScheduledFuture<?>> markedForRemoval = new ArrayList<>();
+                for (ScheduledFuture<?> task : consumer.getTasks()) {
+                    if (task.isDone()) {
+                        logger.error("Unexpected error during task execution. The task will no longer run.");
+                        markedForRemoval.add(task);
+                    }
+                }
+                for (ScheduledFuture<?> task : markedForRemoval) {
+                    task.cancel(true);
+                }
+                consumer.getTasks().removeAll(markedForRemoval);
+            }
+        }
     }
 }

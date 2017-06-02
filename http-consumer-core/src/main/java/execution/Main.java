@@ -1,8 +1,10 @@
-package http.execution;
+package execution;
 /**
  * The entry point for the application.
  */
 public final class Main {
+
+    private Main() {}
 
     /**
      * The method that starts application execution.

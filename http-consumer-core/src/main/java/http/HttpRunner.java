@@ -1,6 +1,5 @@
-package http.execution;
+package http;
 
-import http.data.Destination;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
@@ -38,9 +37,9 @@ interface HttpRunner<T> extends Runnable {
     /**
      * Create a new destination.
      *
-     * @return a new destination object.
+     * @return a new destination.
      */
-    Destination<T> createDestination();
+    T createDestination();
 
     /**
      * Write the data received from the http response to the destination.
@@ -48,5 +47,5 @@ interface HttpRunner<T> extends Runnable {
      * @param response the response containing the content to be supplied to the destination.
      * @param destination the destination for the http response content.
      */
-    void write(HttpResponse response, Destination<T> destination);
+    void write(HttpResponse response, T destination);
 }

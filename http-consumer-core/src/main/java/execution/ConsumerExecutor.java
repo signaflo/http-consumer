@@ -1,6 +1,7 @@
-package http.execution;
+package execution;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -16,15 +17,15 @@ import java.util.concurrent.TimeUnit;
 final class ConsumerExecutor {
 
     private final Consumer consumer;
-    private long initialDelay = 1L;
-    private long monitorInterval = 60 * 60L;
-    private TimeUnit timeUnit = TimeUnit.SECONDS;
 
     private ConsumerExecutor(final int initialCores, final List<Runnable> initialRunners) {
         ScheduledExecutorService consumerMonitorService = Executors.newSingleThreadScheduledExecutor();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(initialCores);
         this.consumer = new Consumer(executorService, initialRunners);
-        Runnable consumerMonitor = new ConsumerMonitor(consumer);
+        Runnable consumerMonitor = new Consumer.Monitor(consumer);
+        long initialDelay = 1L;
+        long monitorInterval = 60 * 60L;
+        TimeUnit timeUnit = TimeUnit.SECONDS;
         consumerMonitorService.scheduleWithFixedDelay(consumerMonitor, initialDelay, monitorInterval, timeUnit);
     }
 

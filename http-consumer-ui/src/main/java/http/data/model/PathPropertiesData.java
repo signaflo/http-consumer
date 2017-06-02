@@ -1,6 +1,6 @@
 package http.data.model;
 
-import http.data.PathProperties;
+import data.PathProperties;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
