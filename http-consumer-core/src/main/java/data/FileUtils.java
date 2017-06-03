@@ -38,7 +38,7 @@ public final class FileUtils {
     }
 
     /**
-     * Create a new file with the supplied directory and naming information. This constructor uses the
+     * Create a new file with the supplied directory and naming information. This method uses the
      * hyphen as the default separator.
      *
      * @param directory the directory the file will be located in. This may not be null.
