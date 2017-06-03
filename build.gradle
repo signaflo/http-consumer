@@ -12,6 +12,8 @@ subprojects {
         options.memberLevel = JavadocMemberLevel.PUBLIC
         options {
             links "https://docs.oracle.com/javase/8/docs/api/"
+            links "https://hc.apache.org/httpcomponents-client-ga/fluent-hc/apidocs"
+            links "https://hc.apache.org/httpcomponents-core-ga/httpcore/apidocs"
         }
     }
 
