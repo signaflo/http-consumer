@@ -3,7 +3,7 @@
 gradle/
 build/
 classes/
-data/
+./data/
 logs/
 .idea/
 # Mobile Tools for Java (J2ME)
