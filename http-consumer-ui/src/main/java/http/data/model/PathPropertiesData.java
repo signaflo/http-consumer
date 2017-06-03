@@ -13,7 +13,7 @@ import javafx.beans.property.StringProperty;
 public class PathPropertiesData {
 
     private PathProperties pathProperties = new PathProperties("trips", "json", "data");
-    private StringProperty pathPropertiesString = new SimpleStringProperty(pathProperties.toString());
+    private final StringProperty pathPropertiesString = new SimpleStringProperty(pathProperties.toString());
 
     public PathPropertiesData() {
     }
