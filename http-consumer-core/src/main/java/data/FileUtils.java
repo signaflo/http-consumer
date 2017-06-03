@@ -9,9 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Static utility methods for working with files. This class mostly acts as a wrapper for a {@link java.io.File}.
- * It's main utility is that it breaks down and encapsulates various pieces of information that
- * make up the full path of the file.
+ * Static utility methods for working with files.
  */
 public final class FileUtils {
 
