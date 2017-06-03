@@ -1,8 +1,6 @@
 package data;
 
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,12 +9,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * Represents a destination for a file. This class mostly acts as a wrapper for a {@link java.io.File}.
+ * Static utility methods for working with files. This class mostly acts as a wrapper for a {@link java.io.File}.
  * It's main utility is that it breaks down and encapsulates various pieces of information that
  * make up the full path of the file.
  */
-@EqualsAndHashCode
-@ToString
 public final class FileUtils {
 
     private FileUtils() {
