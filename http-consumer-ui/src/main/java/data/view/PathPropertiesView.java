@@ -1,6 +1,6 @@
-package http.data.view;
+package data.view;
 
-import http.data.model.PathPropertiesData;
+import data.model.PathPropertiesData;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.GridPane;

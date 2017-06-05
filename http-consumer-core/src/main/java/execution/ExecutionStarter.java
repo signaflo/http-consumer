@@ -8,33 +8,33 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The gateway to the consumer functionality, this class is responsible for setting up and initializing the various
- * thread pools that execute and monitor the application logic.
+ * The gateway to the scheduled execution functionality, this class is responsible for setting up and
+ * initializing the various thread pools that execute and monitor the application logic.
  *
  * @author Jacob Rachiele
  *         Apr. 29, 2017
  */
-final class ConsumerExecutor {
+final class ExecutionStarter {
 
-    private final Consumer consumer;
+    private final ScheduledExecutor scheduledExecutor;
 
-    private ConsumerExecutor(final int initialCores, final List<Runnable> initialRunners) {
+    private ExecutionStarter(final int initialCores, final List<Runnable> initialRunners) {
         ScheduledExecutorService consumerMonitorService = Executors.newSingleThreadScheduledExecutor();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(initialCores);
-        this.consumer = new Consumer(executorService, initialRunners);
-        Runnable consumerMonitor = new Consumer.Monitor(consumer);
+        this.scheduledExecutor = new ScheduledExecutor(executorService, initialRunners);
+        Runnable consumerMonitor = new ScheduledExecutor.Monitor(scheduledExecutor);
         long initialDelay = 1L;
         long monitorInterval = 60 * 60L;
         TimeUnit timeUnit = TimeUnit.SECONDS;
         consumerMonitorService.scheduleWithFixedDelay(consumerMonitor, initialDelay, monitorInterval, timeUnit);
     }
 
-    ConsumerExecutor() {
+    ExecutionStarter() {
         this(0, new ArrayList<>());
     }
 
-    Consumer getConsumer() {
-        return this.consumer;
+    ScheduledExecutor getScheduledExecutor() {
+        return this.scheduledExecutor;
     }
 
     //    private Properties getProperties() {

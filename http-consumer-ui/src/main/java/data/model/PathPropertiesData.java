@@ -1,4 +1,4 @@
-package http.data.model;
+package data.model;
 
 import data.PathProperties;
 import javafx.beans.property.SimpleStringProperty;

@@ -1,0 +1,10 @@
+apply plugin: 'application'
+
+dependencies {
+
+    compile 'com.sparkjava:spark-core:2.6.0'
+
+    runtimeOnly 'org.slf4j:slf4j-nop:1.7.25'
+}
+
+mainClassName = 'http.ServerMain'

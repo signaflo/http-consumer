@@ -1,7 +1,7 @@
-package http.execution;
+package http;
 
-import http.data.model.PathPropertiesData;
-import http.data.view.PathPropertiesView;
+import data.model.PathPropertiesData;
+import data.view.PathPropertiesView;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 

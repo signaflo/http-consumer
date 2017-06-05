@@ -1,26 +1,15 @@
 package http.execution;
 
-import http.data.model.PathPropertiesData;
-import http.data.view.PathPropertiesView;
+import data.model.PathPropertiesData;
+import http.HttpDailyRunnerView;
+import http.URLView;
 import javafx.application.Application;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.geometry.HPos;
-import javafx.geometry.Pos;
-import javafx.geometry.Rectangle2D;
-import javafx.geometry.VPos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.Screen;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.TilePane;
 import javafx.stage.Stage;
-
-import java.awt.*;
 
 /**
  * [Insert class description]
@@ -33,8 +22,9 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) {
         PathPropertiesData data = new PathPropertiesData();
-        Node httpDailyRunnerView = new HttpDailyRunnerView(data);
-        FlowPane root = new FlowPane(httpDailyRunnerView);
+        Node urlView = new URLView(10);
+        GridPane root = new GridPane();
+        root.add(urlView, 0, 0);
         Scene scene = new Scene(root, 600, 400);
         stage.setScene(scene);
         stage.show();

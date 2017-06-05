@@ -3,7 +3,7 @@
     <Properties>
         <Property name="log-path">logs</Property>
         <Property name="archive">${log-path}/archive</Property>
-        <Property name="app-name">http-consumer</Property>
+        <Property name="app-name">http-scheduledExecutor</Property>
     </Properties>
 
     <Appenders>
@@ -14,8 +14,8 @@
                 </pattern>
             </PatternLayout>
         </Console>
-        <SMTP name="CapMetroEmail" subject="Error Log" from="capmetro.http.consumer@gmail.com"
-              to="jrachiele7@gmail.com" smtpHost="smtp.gmail.com" smtpPort="465" smtpUsername="capmetro.http.consumer"
+        <SMTP name="CapMetroEmail" subject="Error Log" from="capmetro.http.scheduledExecutor@gmail.com"
+              to="jrachiele7@gmail.com" smtpHost="smtp.gmail.com" smtpPort="465" smtpUsername="capmetro.http.scheduledExecutor"
               smtpPassword="Time Series Analysis" smtpProtocol="smtps" bufferSize="50">
             <ThresholdFilter level="error"/>
         </SMTP>

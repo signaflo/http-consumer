@@ -1,2 +1,2 @@
 rootProject.name = 'http-consumer'
-include 'http-consumer-core', 'http-consumer-ui'
+include 'http-consumer-core', 'http-consumer-service', 'http-consumer-ui'

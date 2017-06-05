@@ -23,7 +23,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A daily consumer of data from an HTTP source.
+ * <p>
+ *     A daily consumer of data from an HTTP source. This runners writes its response data to a file. It is a daily
+ *     process since the directory in which the data is stored rolls over with each new day.
+ * </p>
+ *
+ * <p>
+ *     This class only processes data when it is 'fresh', as determined by the ETag response header from the
+ *     HTTP source.
+ * </p>
  *
  * @author Jacob Rachiele
  *         Feb. 23, 2017
