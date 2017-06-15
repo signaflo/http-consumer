@@ -12,8 +12,6 @@ import static spark.Spark.port;
  */
 public final class Application {
 
-    private static final String slash = File.separator;
-
     private Application() {}
 
     public static void main(String... args) {
@@ -22,7 +20,7 @@ public final class Application {
 
         final int sparkPort = 4567;
         port(sparkPort);
-        String path = slash + "app";
+        String path = "/app";
         get(path, controller.route());
 
     }
