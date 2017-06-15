@@ -36,10 +36,8 @@ final class ScheduledExecutorController {
         this(0, new ArrayList<>());
     }
 
-    private final Route route = (req, res) -> "Hello from scheduled executor controller";
-
-    final Route route() {
-        return route;
+    Route route() {
+        return (req, res) -> scheduledExecutor.toString();
     }
 
 

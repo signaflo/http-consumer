@@ -1,9 +1,6 @@
 package execution;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static spark.Spark.get;
 import static spark.Spark.port;
@@ -27,6 +24,6 @@ public final class Application {
         port(sparkPort);
         String path = slash + "app";
         get(path, controller.route());
-        
+
     }
 }

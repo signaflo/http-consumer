@@ -1,5 +1,7 @@
 package execution;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,8 @@ import java.util.concurrent.atomic.AtomicReference;
  * Each task is represented as a Runnable. Once added to this executor, the functionality
  * encoded in each Runnable will be executed in a separate thread at a default or user-provided time interval.
  */
+@ToString
+@EqualsAndHashCode
 final class ScheduledExecutor {
 
     private static final int MAX_CORE_POOL_SIZE = 10;
@@ -65,6 +69,8 @@ final class ScheduledExecutor {
         addRunnable(runnable, defaultInitialDelay, defaultInterval, defaultTimeUnit);
     }
 
+    @ToString
+    @EqualsAndHashCode
     static final class Monitor implements Runnable {
 
         private static final Logger logger = LoggerFactory.getLogger(Monitor.class);
