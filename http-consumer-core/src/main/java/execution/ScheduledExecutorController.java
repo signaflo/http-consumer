@@ -1,5 +1,8 @@
 package execution;
 
+import spark.Route;
+import spark.Spark;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -14,11 +17,11 @@ import java.util.concurrent.TimeUnit;
  * @author Jacob Rachiele
  *         Apr. 29, 2017
  */
-final class ExecutionStarter {
+final class ScheduledExecutorController {
 
     private final ScheduledExecutor scheduledExecutor;
 
-    private ExecutionStarter(final int initialCores, final List<Runnable> initialRunners) {
+    private ScheduledExecutorController(final int initialCores, final List<Runnable> initialRunners) {
         ScheduledExecutorService consumerMonitorService = Executors.newSingleThreadScheduledExecutor();
         ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(initialCores);
         this.scheduledExecutor = new ScheduledExecutor(executorService, initialRunners);
@@ -29,13 +32,18 @@ final class ExecutionStarter {
         consumerMonitorService.scheduleWithFixedDelay(consumerMonitor, initialDelay, monitorInterval, timeUnit);
     }
 
-    ExecutionStarter() {
+    ScheduledExecutorController() {
         this(0, new ArrayList<>());
     }
 
-    ScheduledExecutor getScheduledExecutor() {
-        return this.scheduledExecutor;
+    private final Route route = (req, res) -> "Hello from scheduled executor controller";
+
+    final Route route() {
+        return route;
     }
+
+
+
 
     //    private Properties getProperties() {
 //        Path path = FileSystems.getDefault().getPath("etc", "capmetro.properties");

@@ -1,8 +1,10 @@
-apply plugin: 'java-library'
+apply plugin: 'java'
 
-    dependencies {
+dependencies {
 
-    api 'org.apache.httpcomponents:fluent-hc:4.5.3'
+    compile 'org.apache.httpcomponents:fluent-hc:4.5.3'
+    compile 'com.sparkjava:spark-core:2.6.0'
+
     compileOnly 'org.projectlombok:lombok:1.16.14'
 
     runtimeOnly 'org.apache.logging.log4j:log4j-core:2.8.2'
